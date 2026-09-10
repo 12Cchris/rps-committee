@@ -352,6 +352,17 @@
   }
   .expel-btn:hover{background:var(--stamp-red); color:#fff;}
 
+  .visibility-toggle{
+    display:flex; align-items:center; gap:6px; font-size:12.5px;
+    color:var(--navy); font-weight:600; cursor:pointer;
+  }
+  .visibility-toggle input{width:16px; height:16px; cursor:pointer;}
+  .members-private-notice{
+    background:var(--paper-alt); border:1px dashed var(--line);
+    padding:18px; font-size:13.5px; color:var(--gray); text-align:center;
+    margin-bottom:16px;
+  }
+
   @media (max-width:760px){
     .join-layout{grid-template-columns:1fr;}
   }
@@ -587,9 +598,17 @@
       <div class="chair-login" id="chairLoggedIn" style="display:none;">
         <span class="chair-badge">위원장 권한으로 로그인됨</span>
         <button class="chair-toggle" id="chairLogoutBtn">로그아웃</button>
+        <label class="visibility-toggle">
+          <input type="checkbox" id="visibilityToggle">
+          <span id="visibilityLabel">위원 명부 공개</span>
+        </label>
       </div>
 
-      <table class="members">
+      <div class="members-private-notice" id="membersPrivateNotice" style="display:none;">
+        위원장이 위원 명부를 비공개로 설정하였습니다.
+      </div>
+
+      <table class="members" id="membersTable">
         <thead><tr><th>번호</th><th>성명</th><th>손모양</th><th>가입일</th><th id="thAction" style="display:none;">관리</th></tr></thead>
         <tbody id="memberTableBody"></tbody>
       </table>
@@ -801,22 +820,51 @@
 
   // ===== 위원 가입 (Supabase) =====
   // 아래 두 값을 Supabase 프로젝트의 Project URL / anon public(publishable) key로 교체하세요.
-  const SUPABASE_URL = "YOUR_SUPABASE_URL";
-  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const SUPABASE_URL = "https://jcdxkuierrzubkidcpdj.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_NFU4D2Y0gXZthdtk2F3UYA_hVZqApc3";
   const supabaseReady = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
   const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
   let isChair = false;
+  let membersPublic = true;
+
+  async function loadSettings(){
+    if(!supabaseReady) return;
+    const { data, error } = await sb.from('site_settings').select('members_public').eq('id', 1).single();
+    if(!error && data){ membersPublic = data.members_public; }
+  }
 
   async function loadMembers(){
     const countEl = document.getElementById('memberCount');
     const bodyEl = document.getElementById('memberTableBody');
     const thAction = document.getElementById('thAction');
+    const tableEl = document.getElementById('membersTable');
+    const noticeEl = document.getElementById('membersPrivateNotice');
     thAction.style.display = isChair ? '' : 'none';
+
     if(!supabaseReady){
       countEl.textContent = "Supabase 설정이 필요합니다 (관리자 안내 참고)";
       bodyEl.innerHTML = '';
       return;
     }
+
+    await loadSettings();
+
+    const toggleEl = document.getElementById('visibilityToggle');
+    const toggleLbl = document.getElementById('visibilityLabel');
+    if(isChair && toggleEl){
+      toggleEl.checked = membersPublic;
+      toggleLbl.textContent = membersPublic ? "위원 명부 공개 중" : "위원 명부 비공개 중";
+    }
+
+    if(!isChair && !membersPublic){
+      tableEl.style.display = 'none';
+      noticeEl.style.display = 'block';
+      countEl.textContent = "명부가 비공개 상태입니다.";
+      return;
+    }
+    tableEl.style.display = '';
+    noticeEl.style.display = 'none';
+
     countEl.textContent = "불러오는 중…";
     const { data, error } = await sb
       .from('members')
@@ -826,7 +874,7 @@
       countEl.textContent = "명부를 불러오지 못했습니다 (" + error.message + ")";
       return;
     }
-    countEl.textContent = `현재 위촉된 위원: 총 ${data.length}명`;
+    countEl.textContent = `현재 위촉된 위원: 총 ${data.length}명` + (isChair && !membersPublic ? " (비공개 상태 - 위원장에게만 보임)" : "");
     bodyEl.innerHTML = data.map(m => `
       <tr>
         <td>제${String(m.member_no).padStart(4,'0')}호</td>
@@ -837,6 +885,17 @@
       </tr>
     `).join('');
   }
+
+  document.getElementById('visibilityToggle').addEventListener('change', async (e)=>{
+    const newVal = e.target.checked;
+    const { error } = await sb.from('site_settings').update({ members_public: newVal }).eq('id', 1);
+    if(error){
+      alert("설정 변경에 실패했습니다: " + error.message);
+      e.target.checked = !newVal;
+      return;
+    }
+    loadMembers();
+  });
 
   async function expelMember(memberNo, name){
     if(!confirm(`${name} 위원을 강제 탈퇴시키겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
