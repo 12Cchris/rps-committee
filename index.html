@@ -323,6 +323,35 @@
   table.members th{background:var(--paper-alt); color:var(--navy); font-weight:600; font-size:12.5px;}
   table.members td.hand{white-space:nowrap;}
 
+  .chair-login{margin:16px 0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .chair-toggle{
+    background:none; border:1px solid var(--line); color:var(--navy);
+    font-size:12.5px; font-weight:600; padding:7px 12px; cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .chair-toggle:hover{border-color:var(--gold);}
+  .chair-login-form{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; width:100%;}
+  .chair-login-form input{
+    border:1px solid var(--line); padding:8px 10px; font-size:13.5px;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .chair-submit{
+    background:var(--navy); color:#f4efe0; border:none; padding:8px 16px;
+    font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;
+  }
+  .chair-submit:hover{background:var(--navy-soft);}
+  .chair-msg{font-size:12.5px; color:var(--stamp-red); width:100%;}
+  .chair-badge{
+    font-size:12.5px; font-weight:700; color:var(--stamp-green);
+    border:1px solid var(--stamp-green); padding:6px 12px;
+  }
+  .expel-btn{
+    background:none; border:1px solid var(--stamp-red); color:var(--stamp-red);
+    font-size:12px; font-weight:600; padding:5px 10px; cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .expel-btn:hover{background:var(--stamp-red); color:#fff;}
+
   @media (max-width:760px){
     .join-layout{grid-template-columns:1fr;}
   }
@@ -545,8 +574,23 @@
     <div class="member-directory">
       <h3>위원 명부</h3>
       <div class="sub" id="memberCount">불러오는 중…</div>
+
+      <div class="chair-login" id="chairLoggedOut">
+        <button class="chair-toggle" id="chairToggleBtn">위원장 로그인</button>
+        <div class="chair-login-form" id="chairLoginForm" style="display:none;">
+          <input type="text" id="chairEmail" placeholder="위원장 계정 이메일" autocomplete="username">
+          <input type="password" id="chairPw" placeholder="비밀번호" autocomplete="current-password">
+          <button class="chair-submit" id="chairLoginBtn">로그인</button>
+          <div class="chair-msg" id="chairMsg"></div>
+        </div>
+      </div>
+      <div class="chair-login" id="chairLoggedIn" style="display:none;">
+        <span class="chair-badge">위원장 권한으로 로그인됨</span>
+        <button class="chair-toggle" id="chairLogoutBtn">로그아웃</button>
+      </div>
+
       <table class="members">
-        <thead><tr><th>번호</th><th>성명</th><th>손모양</th><th>가입일</th></tr></thead>
+        <thead><tr><th>번호</th><th>성명</th><th>손모양</th><th>가입일</th><th id="thAction" style="display:none;">관리</th></tr></thead>
         <tbody id="memberTableBody"></tbody>
       </table>
     </div>
@@ -756,15 +800,18 @@
   });
 
   // ===== 위원 가입 (Supabase) =====
-  // 아래 두 값을 Supabase 프로젝트의 Project URL / anon public key로 교체하세요.
-  const SUPABASE_URL = "https://jcdxkuierrzubkidcpdj.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_NFU4D2Y0gXZthdtk2F3UYA_hVZqApc3";
+  // 아래 두 값을 Supabase 프로젝트의 Project URL / anon public(publishable) key로 교체하세요.
+  const SUPABASE_URL = "YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
   const supabaseReady = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
   const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  let isChair = false;
 
   async function loadMembers(){
     const countEl = document.getElementById('memberCount');
     const bodyEl = document.getElementById('memberTableBody');
+    const thAction = document.getElementById('thAction');
+    thAction.style.display = isChair ? '' : 'none';
     if(!supabaseReady){
       countEl.textContent = "Supabase 설정이 필요합니다 (관리자 안내 참고)";
       bodyEl.innerHTML = '';
@@ -786,8 +833,63 @@
         <td>${escapeHtml(m.name)}</td>
         <td class="hand">${emojiMap[m.hand] || ''} ${m.hand}</td>
         <td>${new Date(m.created_at).toLocaleDateString('ko-KR')}</td>
+        ${isChair ? `<td><button class="expel-btn" data-no="${m.member_no}" data-name="${escapeHtml(m.name)}">강제 탈퇴</button></td>` : ''}
       </tr>
     `).join('');
+  }
+
+  async function expelMember(memberNo, name){
+    if(!confirm(`${name} 위원을 강제 탈퇴시키겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+    const { error } = await sb.from('members').delete().eq('member_no', memberNo);
+    if(error){
+      alert("탈퇴 처리에 실패했습니다: " + error.message);
+      return;
+    }
+    loadMembers();
+  }
+
+  document.getElementById('memberTableBody').addEventListener('click', (e)=>{
+    const btn = e.target.closest('.expel-btn');
+    if(!btn) return;
+    expelMember(Number(btn.dataset.no), btn.dataset.name);
+  });
+
+  // ---- 위원장 로그인 ----
+  const chairToggleBtn = document.getElementById('chairToggleBtn');
+  const chairLoginForm = document.getElementById('chairLoginForm');
+  const chairLoggedOut = document.getElementById('chairLoggedOut');
+  const chairLoggedIn = document.getElementById('chairLoggedIn');
+
+  chairToggleBtn.addEventListener('click', ()=>{
+    chairLoginForm.style.display = chairLoginForm.style.display === 'none' ? 'flex' : 'none';
+  });
+
+  document.getElementById('chairLoginBtn').addEventListener('click', async ()=>{
+    const msgEl = document.getElementById('chairMsg');
+    if(!supabaseReady){ msgEl.textContent = "Supabase 설정이 필요합니다."; return; }
+    const email = document.getElementById('chairEmail').value.trim();
+    const pw = document.getElementById('chairPw').value;
+    msgEl.textContent = "";
+    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if(error){
+      msgEl.textContent = "로그인 실패: " + error.message;
+      return;
+    }
+    document.getElementById('chairPw').value = '';
+  });
+
+  document.getElementById('chairLogoutBtn').addEventListener('click', async ()=>{
+    if(supabaseReady) await sb.auth.signOut();
+  });
+
+  if(supabaseReady){
+    sb.auth.onAuthStateChange((_event, session)=>{
+      isChair = !!session;
+      chairLoggedOut.style.display = isChair ? 'none' : 'flex';
+      chairLoggedIn.style.display = isChair ? 'flex' : 'none';
+      if(chairLoginForm) chairLoginForm.style.display = 'none';
+      loadMembers();
+    });
   }
 
   function escapeHtml(str){
