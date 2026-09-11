@@ -19,7 +19,7 @@
 <meta name="twitter:image" content="og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -369,6 +369,15 @@
     font-size:11.5px; font-weight:700; padding:3px 8px;
   }
 
+  .sort-bar{
+    display:flex; align-items:center; gap:8px; margin:10px 0 12px;
+    font-size:13px; color:var(--navy);
+  }
+  .sort-bar select{
+    border:1px solid var(--line); background:#fff; padding:6px 10px;
+    font-size:13px; font-family:'Noto Sans KR',sans-serif; color:var(--ink);
+  }
+
   @media (max-width:760px){
     .join-layout{grid-template-columns:1fr;}
   }
@@ -583,7 +592,7 @@
         <div class="cert-name" id="certName"></div>
         <div class="cert-hand" id="certHand"></div>
         <div class="cert-body">위 사람을 가위바위보 심의위원회 위원으로 위촉하며, 공정한 판정을 위해 성실히 임할 것을 당부합니다.</div>
-        <img src="logo.webp" alt="위원회 직인" class="cert-seal">
+        <img src="logo.webp" alt="위원회 직인" class="cert-seal" width="56" height="56" loading="lazy">
         <div class="cert-date" id="certDate"></div>
       </div>
     </div>
@@ -614,6 +623,16 @@
         위원장이 위원 명부를 비공개로 설정하였습니다.
       </div>
 
+      <div class="sort-bar" id="sortBar">
+        <label for="memberSort">정렬</label>
+        <select id="memberSort">
+          <option value="recent">최근 가입순</option>
+          <option value="oldest">오래된 가입순</option>
+          <option value="name">이름순 (가나다)</option>
+          <option value="hand">손모양별</option>
+        </select>
+      </div>
+
       <table class="members" id="membersTable">
         <thead><tr><th>번호</th><th>성명</th><th>손모양</th><th>가입일</th><th id="thAction" style="display:none;">관리</th></tr></thead>
         <tbody id="memberTableBody"></tbody>
@@ -623,46 +642,44 @@
 
   <!-- ================= 승부현황 ================= -->
   <section class="panel" id="panel-status">
-    <div class="doc-no">승부 현황 통계 · 2026년 누계 기준</div>
-    <h2 style="color:var(--navy); font-size:24px; margin-top:6px; margin-bottom:26px;">가위바위보 승부 현황</h2>
+    <div class="doc-no">승부 현황 통계 · 실시간 집계</div>
+    <h2 style="color:var(--navy); font-size:24px; margin-top:6px; margin-bottom:8px;">가위바위보 승부 현황</h2>
+    <p style="color:var(--gray); font-size:13.5px; margin:0 0 26px;" id="statusSub">모의 대국 탭에서 쌓인 실제 기록을 집계합니다.</p>
 
     <div class="status-grid">
-      <div class="kpi"><div class="num">128,402</div><div class="lbl">누적 대국 수</div></div>
-      <div class="kpi"><div class="num">33.4%</div><div class="lbl">무효(비김) 비율</div></div>
-      <div class="kpi"><div class="num">482건</div><div class="lbl">이의신청 접수</div></div>
-      <div class="kpi"><div class="num">19.9%</div><div class="lbl">이의신청 인용률</div></div>
+      <div class="kpi"><div class="num" id="statTotal">—</div><div class="lbl">누적 모의 대국 수</div></div>
+      <div class="kpi"><div class="num" id="statDraw">—</div><div class="lbl">무효(비김) 비율</div></div>
+      <div class="kpi"><div class="num" id="statCommitteeWin">—</div><div class="lbl">위원회 승률</div></div>
+      <div class="kpi"><div class="num" id="statAppeal">—</div><div class="lbl">이의신청 접수 (전원 기각)</div></div>
     </div>
 
     <div class="bar-block">
-      <h3>손모양별 제출 비율</h3>
+      <h3>손모양별 제출 비율 (귀하 기준)</h3>
       <div class="bar-row">
         <div class="name">가위</div>
-        <div class="bar-track"><div class="bar-fill" style="width:31%"></div></div>
-        <div class="pct">31.2%</div>
+        <div class="bar-track"><div class="bar-fill" id="barScissors" style="width:0%"></div></div>
+        <div class="pct" id="pctScissors">—</div>
       </div>
       <div class="bar-row">
         <div class="name">바위</div>
-        <div class="bar-track"><div class="bar-fill" style="width:35%"></div></div>
-        <div class="pct">34.9%</div>
+        <div class="bar-track"><div class="bar-fill" id="barRock" style="width:0%"></div></div>
+        <div class="pct" id="pctRock">—</div>
       </div>
       <div class="bar-row">
         <div class="name">보</div>
-        <div class="bar-track"><div class="bar-fill" style="width:34%"></div></div>
-        <div class="pct">33.9%</div>
+        <div class="bar-track"><div class="bar-fill" id="barPaper" style="width:0%"></div></div>
+        <div class="pct" id="pctPaper">—</div>
       </div>
     </div>
 
     <div class="bar-block">
-      <h3>이의신청 처리 현황</h3>
+      <h3>최근 대국 기록</h3>
       <table class="appeal">
         <thead>
-          <tr><th>처리 구분</th><th>건수</th><th>비율</th></tr>
+          <tr><th>시각</th><th>귀하</th><th>위원회</th><th>결과</th></tr>
         </thead>
-        <tbody>
-          <tr><td>인용 (판정 번복)</td><td>96건</td><td>19.9%</td></tr>
-          <tr><td>기각 (원판정 유지)</td><td>358건</td><td>74.3%</td></tr>
-          <tr><td>각하 (신청 부적법)</td><td>16건</td><td>3.3%</td></tr>
-          <tr><td>심의중</td><td>12건</td><td>2.5%</td></tr>
+        <tbody id="recentGamesBody">
+          <tr><td colspan="4" style="color:var(--gray);">불러오는 중…</td></tr>
         </tbody>
       </table>
     </div>
@@ -679,6 +696,33 @@
 
 <script>
   const cases = [
+    {
+      no:"위심 2026-020호",
+      title:"심판 없는 대국의 결과 인정 여부 사건",
+      result:"deny",
+      resultLabel:"기각",
+      summary:"신청인은 목격자나 심판 없이 당사자끼리만 진행한 대국이었으므로 결과를 인정할 수 없다고 주장하였다.",
+      order:"이의신청을 기각한다.",
+      reason:"이 규정은 대국의 성립 요건으로 제3자 심판의 입회를 요구하고 있지 아니하며, 당사자 간 합의에 따라 자율적으로 진행된 대국도 유효하다. 사후에 결과가 불리하다는 사정만으로 무효를 주장할 수는 없다."
+    },
+    {
+      no:"위심 2026-018호",
+      title:"양손 동시 제출(가위·보 혼합) 무효 사건",
+      result:"grant",
+      resultLabel:"인용",
+      summary:"신청인은 상대방이 대국 중 손모양을 명확히 하지 않고 가위와 보의 중간 형태로 애매하게 제출하였다고 주장하였다.",
+      order:"이의신청을 인용하며, 해당 대국을 무효로 하고 재대국을 명한다.",
+      reason:"제2조는 가위·바위·보 각각의 손모양을 명확히 정의하고 있으며, 어느 손모양에도 해당하지 않는 애매한 형태의 제출은 유효한 의사표시로 볼 수 없다. 판정의 명확성을 위해 무효로 하고 재대국함이 타당하다."
+    },
+    {
+      no:"위심 2026-016호",
+      title:"손모양 사전 예고(선언 후 대국) 관련 이의 사건",
+      result:"dismiss",
+      resultLabel:"각하",
+      summary:"신청인은 상대방이 대국 전 '나는 항상 바위를 낸다'고 말한 뒤 실제로 가위를 내어 기만행위라고 주장하였다.",
+      order:"이의신청을 각하한다.",
+      reason:"대국 전의 발언은 심리전의 일종으로 통상적으로 허용되는 범위에 속하며, 규정상 사전 발언과 실제 제출 손모양의 일치 의무를 정하고 있지 아니하다. 이는 심의 대상이 되는 규정 위반에 해당하지 아니하여 각하한다."
+    },
     {
       no:"위심 2026-014호",
       title:"동시성 논란: 0.1초 후출 판정 사건",
@@ -732,6 +776,15 @@
       summary:"신청인은 판정 직후 '한 번만 다시 하자'며 재대국을 요구하였으나 상대방이 이를 거부한 데 대해 이의를 제기하였다.",
       order:"이의신청을 기각한다.",
       reason:"판정은 제3조에 따라 손모양이 동시에 제출된 시점에 확정되며, 사후 합의 없는 일방의 번복 요구는 인정되지 않는다. 무르기는 상호 합의가 있는 경우에 한하여 허용되는 관행일 뿐 권리가 아니다."
+    },
+    {
+      no:"위심 2026-002호",
+      title:"구호 생략(묵음 대국) 무효 확인의 건",
+      result:"grant",
+      resultLabel:"인용",
+      summary:"신청인은 상대방이 '가위바위보'라는 정식 구호 없이 손짓만으로 대국을 진행하여 절차상 하자가 있다고 주장하였다.",
+      order:"이의신청을 인용하며, 해당 대국을 무효로 하고 재대국을 명한다.",
+      reason:"제4조는 정해진 구호에 맞추어 동시에 손모양을 제출할 것을 요구하고 있으며, 구호는 단순한 관용구가 아니라 동시성을 담보하는 절차적 장치에 해당한다. 구호 없이 진행된 대국은 동시성 판단이 곤란하므로 무효로 함이 타당하다."
     }
   ];
 
@@ -765,7 +818,8 @@
   const beats = {"가위":"보", "바위":"가위", "보":"바위"};
   const emojiMap = {"가위":"✌️", "바위":"✊", "보":"✋"};
   let score = {win:0, lose:0, draw:0};
-  let caseSeq = 15;
+  let caseSeq = 21;
+  let lastGameId = null;
   const appealReasons = [
     "판정 당시 영상 판독 결과 후출 또는 절차 위반이 발견되지 아니하여 이의신청을 기각한다.",
     "귀하가 제출한 손모양은 규정 제3조가 정한 승패 기준에 정확히 부합하는바, 이의신청을 기각한다.",
@@ -773,7 +827,7 @@
     "위원회는 전원일치로 원판정에 하자가 없다고 의결하였다."
   ];
 
-  function playGame(userPick){
+  async function playGame(userPick){
     const committeePick = ["가위","바위","보"][Math.floor(Math.random()*3)];
     let result, badgeClass, badgeLabel, order;
     if(userPick === committeePick){
@@ -809,20 +863,95 @@
     appealBtn.textContent = '이의신청 제기';
 
     document.getElementById('verdictBox').style.display = 'block';
+
+    lastGameId = null;
+    if(supabaseReady){
+      const { data, error } = await sb
+        .from('game_results')
+        .insert({ user_pick: userPick, committee_pick: committeePick, result })
+        .select('id')
+        .single();
+      if(!error && data) lastGameId = data.id;
+    }
   }
 
   document.querySelectorAll('.pick-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> playGame(btn.dataset.pick));
   });
 
-  document.getElementById('appealBtn').addEventListener('click', (e)=>{
+  document.getElementById('appealBtn').addEventListener('click', async (e)=>{
     const reason = appealReasons[Math.floor(Math.random()*appealReasons.length)];
     const resultEl = document.getElementById('appealResult');
     resultEl.textContent = '이의신청 심의 결과: 기각. ' + reason;
     resultEl.classList.add('show');
     e.target.disabled = true;
     e.target.textContent = '심의 완료';
+    if(supabaseReady && lastGameId){
+      await sb.from('game_results').update({ appealed: true }).eq('id', lastGameId);
+    }
   });
+
+  // ===== 승부 현황 (실데이터 집계) =====
+  async function loadStats(){
+    const subEl = document.getElementById('statusSub');
+    if(!supabaseReady){
+      subEl.textContent = "Supabase 설정이 필요합니다 (관리자 안내 참고)";
+      return;
+    }
+    subEl.textContent = "모의 대국 탭에서 쌓인 실제 기록을 집계합니다.";
+
+    const [{count: total}, {count: drawCount}, {count: loseCount}, {count: appealCount}] = await Promise.all([
+      sb.from('game_results').select('*', { count:'exact', head:true }),
+      sb.from('game_results').select('*', { count:'exact', head:true }).eq('result','draw'),
+      sb.from('game_results').select('*', { count:'exact', head:true }).eq('result','lose'),
+      sb.from('game_results').select('*', { count:'exact', head:true }).eq('appealed', true)
+    ]);
+
+    const t = total || 0;
+    document.getElementById('statTotal').textContent = t.toLocaleString('ko-KR') + '건';
+    document.getElementById('statDraw').textContent = t ? ((drawCount/t)*100).toFixed(1) + '%' : '0%';
+    document.getElementById('statCommitteeWin').textContent = t ? ((loseCount/t)*100).toFixed(1) + '%' : '0%';
+    document.getElementById('statAppeal').textContent = (appealCount || 0).toLocaleString('ko-KR') + '건';
+
+    if(t > 0){
+      const [{count: sCount}, {count: rCount}, {count: pCount}] = await Promise.all([
+        sb.from('game_results').select('*', { count:'exact', head:true }).eq('user_pick','가위'),
+        sb.from('game_results').select('*', { count:'exact', head:true }).eq('user_pick','바위'),
+        sb.from('game_results').select('*', { count:'exact', head:true }).eq('user_pick','보')
+      ]);
+      const setBar = (barId, pctId, n) => {
+        const pct = (n / t) * 100;
+        document.getElementById(barId).style.width = pct + '%';
+        document.getElementById(pctId).textContent = pct.toFixed(1) + '%';
+      };
+      setBar('barScissors','pctScissors', sCount);
+      setBar('barRock','pctRock', rCount);
+      setBar('barPaper','pctPaper', pCount);
+    } else {
+      ['barScissors','barRock','barPaper'].forEach(id => document.getElementById(id).style.width = '0%');
+      ['pctScissors','pctRock','pctPaper'].forEach(id => document.getElementById(id).textContent = '0%');
+    }
+
+    const recentBody = document.getElementById('recentGamesBody');
+    const { data: recent, error: recentErr } = await sb
+      .from('game_results')
+      .select('created_at,user_pick,committee_pick,result')
+      .order('created_at', { ascending:false })
+      .limit(10);
+    if(recentErr || !recent || recent.length === 0){
+      recentBody.innerHTML = `<tr><td colspan="4" style="color:var(--gray);">아직 기록된 대국이 없습니다.</td></tr>`;
+    } else {
+      const resultLabel = { win:'승리', lose:'패배', draw:'무효' };
+      recentBody.innerHTML = recent.map(r => `
+        <tr>
+          <td>${new Date(r.created_at).toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
+          <td>${emojiMap[r.user_pick] || ''} ${r.user_pick}</td>
+          <td>${emojiMap[r.committee_pick] || ''} ${r.committee_pick}</td>
+          <td>${resultLabel[r.result] || r.result}</td>
+        </tr>
+      `).join('');
+    }
+  }
 
   // ===== 위원 가입 (Supabase) =====
   // 아래 두 값을 Supabase 프로젝트의 Project URL / anon public(publishable) key로 교체하세요.
@@ -866,11 +995,13 @@
     if(!isChair && !membersPublic){
       tableEl.style.display = 'none';
       noticeEl.style.display = 'block';
+      document.getElementById('sortBar').style.display = 'none';
       countEl.textContent = "명부가 비공개 상태입니다.";
       return;
     }
     tableEl.style.display = '';
     noticeEl.style.display = 'none';
+    document.getElementById('sortBar').style.display = '';
 
     countEl.textContent = "불러오는 중…";
     const { data, error } = await sb
@@ -882,6 +1013,32 @@
       return;
     }
     countEl.textContent = `현재 위촉된 위원: 총 ${data.length}명` + (isChair && !membersPublic ? " (비공개 상태 - 위원장에게만 보임)" : "");
+    lastMembersData = data;
+    renderMemberRows();
+  }
+
+  const handOrder = { "가위":0, "바위":1, "보":2 };
+  let lastMembersData = [];
+
+  function sortMembers(data, mode){
+    const arr = data.slice();
+    switch(mode){
+      case 'oldest':
+        arr.sort((a,b)=> a.member_no - b.member_no); break;
+      case 'name':
+        arr.sort((a,b)=> a.name.localeCompare(b.name, 'ko')); break;
+      case 'hand':
+        arr.sort((a,b)=> (handOrder[a.hand] ?? 9) - (handOrder[b.hand] ?? 9) || a.member_no - b.member_no); break;
+      default: // recent
+        arr.sort((a,b)=> b.member_no - a.member_no);
+    }
+    return arr;
+  }
+
+  function renderMemberRows(){
+    const bodyEl = document.getElementById('memberTableBody');
+    const mode = document.getElementById('memberSort').value;
+    const data = sortMembers(lastMembersData, mode);
     const chairRow = `
       <tr class="chair-row">
         <td><span class="chair-no-badge">위원장</span></td>
@@ -901,6 +1058,8 @@
       </tr>
     `).join('');
   }
+
+  document.getElementById('memberSort').addEventListener('change', renderMemberRows);
 
   document.getElementById('visibilityToggle').addEventListener('change', async (e)=>{
     const newVal = e.target.checked;
@@ -1032,6 +1191,7 @@
       btn.classList.add('active');
       document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
       if(btn.dataset.tab === 'join'){ loadMembers(); }
+      if(btn.dataset.tab === 'status'){ loadStats(); }
       window.scrollTo({top:0, behavior:'smooth'});
     });
   });
