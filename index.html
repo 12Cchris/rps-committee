@@ -872,6 +872,30 @@
         .select('id')
         .single();
       if(!error && data) lastGameId = data.id;
+      trimOldGameResults();
+    }
+  }
+
+  // 대국 기록이 10건을 넘으면 가장 오래된 기록부터 삭제
+  const MAX_GAME_RECORDS = 10;
+  async function trimOldGameResults(){
+    try{
+      const { count } = await sb
+        .from('game_results')
+        .select('*', { count:'exact', head:true });
+      if(!count || count <= MAX_GAME_RECORDS) return;
+
+      const overflow = count - MAX_GAME_RECORDS;
+      const { data: oldest, error } = await sb
+        .from('game_results')
+        .select('id')
+        .order('created_at', { ascending:true })
+        .limit(overflow);
+      if(error || !oldest || oldest.length === 0) return;
+
+      await sb.from('game_results').delete().in('id', oldest.map(r => r.id));
+    } catch(e){
+      console.error('trimOldGameResults error:', e);
     }
   }
 
