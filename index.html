@@ -22,7 +22,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
   :root{
     --navy-deep:#0f1d33;
@@ -694,7 +694,7 @@
   </div>
 </footer>
 
-<script>
+<script defer>
   const cases = [
     {
       no:"위심 2026-020호",
@@ -872,28 +872,30 @@
         .select('id')
         .single();
       if(!error && data) lastGameId = data.id;
-      trimOldGameResults();
+      // 매번 정리하면 대국마다 추가 요청이 붙으므로, 몇 판에 한 번만 정리
+      trimCounter = (trimCounter + 1) % TRIM_EVERY_N_PLAYS;
+      if(trimCounter === 0) trimOldGameResults();
     }
   }
 
-  // 대국 기록이 10건을 넘으면 가장 오래된 기록부터 삭제
+  // 대국 기록이 10건을 넘으면 가장 오래된 기록부터 삭제 (매 대국마다 아닌, N판마다 한 번씩)
   const MAX_GAME_RECORDS = 10;
+  const TRIM_EVERY_N_PLAYS = 3;
+  let trimCounter = 0;
   async function trimOldGameResults(){
     try{
-      const { count } = await sb
+      // count와 id 목록을 한 번의 요청으로 같이 받아 왕복 횟수를 줄임
+      const { data: rows, count, error } = await sb
         .from('game_results')
-        .select('*', { count:'exact', head:true });
-      if(!count || count <= MAX_GAME_RECORDS) return;
+        .select('id', { count:'exact' })
+        .order('created_at', { ascending:true });
+      if(error || !count || count <= MAX_GAME_RECORDS || !rows) return;
 
       const overflow = count - MAX_GAME_RECORDS;
-      const { data: oldest, error } = await sb
-        .from('game_results')
-        .select('id')
-        .order('created_at', { ascending:true })
-        .limit(overflow);
-      if(error || !oldest || oldest.length === 0) return;
+      const oldestIds = rows.slice(0, overflow).map(r => r.id);
+      if(oldestIds.length === 0) return;
 
-      await sb.from('game_results').delete().in('id', oldest.map(r => r.id));
+      await sb.from('game_results').delete().in('id', oldestIds);
     } catch(e){
       console.error('trimOldGameResults error:', e);
     }
