@@ -983,8 +983,13 @@
   // 아래 두 값을 Supabase 프로젝트의 Project URL / anon public(publishable) key로 교체하세요.
   const SUPABASE_URL = "https://jcdxkuierrzubkidcpdj.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_NFU4D2Y0gXZthdtk2F3UYA_hVZqApc3";
-  const supabaseReady = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
+  const supabaseConfigured = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
+  const supabaseLibLoaded = !!(window.supabase && typeof window.supabase.createClient === 'function');
+  const supabaseReady = supabaseConfigured && supabaseLibLoaded;
   const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  if(supabaseConfigured && !supabaseLibLoaded){
+    console.warn('[위원 가입/현황] Supabase 라이브러리(jsdelivr CDN)를 불러오지 못했습니다. 네트워크 차단이나 광고 차단 확장 프로그램을 확인하세요.');
+  }
   let isChair = false;
   let membersPublic = true;
   const CHAIR_DISPLAY_NAME = "위원장";
@@ -1126,7 +1131,7 @@
 
   document.getElementById('chairLoginBtn').addEventListener('click', async ()=>{
     const msgEl = document.getElementById('chairMsg');
-    if(!supabaseReady){ msgEl.textContent = "Supabase 설정이 필요합니다."; return; }
+    if(!supabaseReady){ msgEl.textContent = supabaseConfigured ? "서버 연결 라이브러리를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요." : "Supabase 설정이 필요합니다."; return; }
     const email = document.getElementById('chairEmail').value.trim();
     const pw = document.getElementById('chairPw').value;
     msgEl.textContent = "";
