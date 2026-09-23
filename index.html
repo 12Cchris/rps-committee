@@ -988,7 +988,7 @@
   const supabaseReady = supabaseConfigured && supabaseLibLoaded;
   const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
   if(supabaseConfigured && !supabaseLibLoaded){
-    console.warn('[위원 가입/현황] Supabase 라이브러리(jsdelivr CDN)를 불러오지 못했습니다. 네트워크 차단이나 광고 차단 확장 프로그램을 확인하세요.');
+    console.warn('[위원 가입/현황] Supabase 라이브러리(supabase.min.js)를 불러오지 못했습니다. index.html과 같은 폴더에 supabase.min.js 파일이 있는지 확인하세요.');
   }
   let isChair = false;
   let membersPublic = true;
