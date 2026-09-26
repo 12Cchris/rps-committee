@@ -692,7 +692,7 @@
   <div class="wrap">
     가위바위보 심의위원회 · 본 사이트는 패러디 목적의 웹페이지입니다.<br>
     가위바위보 규정 및 심의판례는 실제 효력이 없습니다.<br>
-    <span style="opacity:.6; font-size:.8em;">v1.1.0</span>
+    <span style="opacity:.6; font-size:.8em;">v1.1.1</span>
   </div>
 </footer>
 
@@ -876,16 +876,13 @@
     lastGameId = null;
     if(supabaseReady){
       try{
-        // 최근 목록용 insert와, 절대 줄어들지 않는 누적 카운터 rpc를 동시에 요청
-        const [insertRes] = await Promise.all([
-          sb.from('game_results')
-            .insert({ user_pick: userPick, committee_pick: committeePick, result })
-            .select('id')
-            .single(),
-          sb.rpc('record_game_result', { p_result: result, p_user_pick: userPick })
-            .then(({error}) => { if(error) console.error('record_game_result error:', error); })
-        ]);
-        if(!insertRes.error && insertRes.data) lastGameId = insertRes.data.id;
+        // 기록 insert와 누적 카운터 갱신을 서버 쪽 함수 하나로 묶어서 한 번의 요청으로 처리
+        // (따로 호출하면 한쪽만 성공하는 정합성 문제가 생길 수 있고, 왕복도 두 번이 됨)
+        const { data, error } = await sb.rpc('play_and_record', {
+          p_user_pick: userPick, p_committee_pick: committeePick, p_result: result
+        });
+        if(error) console.error('play_and_record error:', error);
+        if(!error && data) lastGameId = data.id;
         // 매번 정리하면 대국마다 추가 요청이 붙으므로, 몇 판에 한 번만 정리
         trimCounter = (trimCounter + 1) % TRIM_EVERY_N_PLAYS;
         if(trimCounter === 0) trimOldGameResults();
@@ -1194,8 +1191,12 @@
     return d.innerHTML;
   }
 
-  let lastJoinAt = 0;
   const JOIN_COOLDOWN_MS = 30000;
+  let lastJoinAt = 0;
+  try{
+    // 새로고침해도 쿨다운이 풀리지 않도록 마지막 가입 시각을 로컬에 보관
+    lastJoinAt = Number(localStorage.getItem('rps_last_join_at')) || 0;
+  } catch(e){ /* localStorage 접근 불가 시 세션 내 쿨다운만 적용 */ }
   document.getElementById('joinSubmit').addEventListener('click', async ()=>{
     const nameEl = document.getElementById('joinName');
     const handEl = document.getElementById('joinHand');
@@ -1238,6 +1239,7 @@
     }
 
     lastJoinAt = Date.now();
+    try{ localStorage.setItem('rps_last_join_at', String(lastJoinAt)); } catch(e){}
     msgEl.textContent = "가입 신청이 완료되었습니다.";
     msgEl.className = "join-msg ok";
 
