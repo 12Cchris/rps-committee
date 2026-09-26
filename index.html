@@ -690,7 +690,8 @@
 <footer>
   <div class="wrap">
     가위바위보 심의위원회 · 본 사이트는 패러디 목적의 웹페이지입니다.<br>
-    가위바위보 규정 및 심의판례는 실제 효력이 없습니다.
+    가위바위보 규정 및 심의판례는 실제 효력이 없습니다.<br>
+    <span style="opacity:.6; font-size:.8em;">v1.0.0</span>
   </div>
 </footer>
 
@@ -827,7 +828,12 @@
     "위원회는 전원일치로 원판정에 하자가 없다고 의결하였다."
   ];
 
+  let lastPlayAt = 0;
+  const PLAY_COOLDOWN_MS = 800;
   async function playGame(userPick){
+    const now = Date.now();
+    if(now - lastPlayAt < PLAY_COOLDOWN_MS) return; // 짧은 간격 연타/자동화 방지
+    lastPlayAt = now;
     const committeePick = ["가위","바위","보"][Math.floor(Math.random()*3)];
     let result, badgeClass, badgeLabel, order;
     if(userPick === committeePick){
@@ -1163,6 +1169,8 @@
     return d.innerHTML;
   }
 
+  let lastJoinAt = 0;
+  const JOIN_COOLDOWN_MS = 30000;
   document.getElementById('joinSubmit').addEventListener('click', async ()=>{
     const nameEl = document.getElementById('joinName');
     const handEl = document.getElementById('joinHand');
@@ -1171,6 +1179,12 @@
     const btnEl = document.getElementById('joinSubmit');
     const name = nameEl.value.trim();
 
+    const sinceLastJoin = Date.now() - lastJoinAt;
+    if(sinceLastJoin < JOIN_COOLDOWN_MS){
+      msgEl.textContent = `연속 가입 신청은 ${Math.ceil((JOIN_COOLDOWN_MS - sinceLastJoin)/1000)}초 후 다시 시도해 주세요.`;
+      msgEl.className = "join-msg error";
+      return;
+    }
     if(!name){
       msgEl.textContent = "성명을 입력해 주세요.";
       msgEl.className = "join-msg error";
@@ -1198,6 +1212,7 @@
       return;
     }
 
+    lastJoinAt = Date.now();
     msgEl.textContent = "가입 신청이 완료되었습니다.";
     msgEl.className = "join-msg ok";
 
