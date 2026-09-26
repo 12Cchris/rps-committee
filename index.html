@@ -250,6 +250,7 @@
   }
   .pick-btn:hover{border-color:var(--gold); background:var(--paper-alt);}
   .pick-btn .pick-emoji{font-size:34px;}
+  .pick-btn:disabled{opacity:.5; cursor:wait;}
 
   .verdict-box{
     border:1px solid var(--line); border-top:3px solid var(--navy);
@@ -691,7 +692,7 @@
   <div class="wrap">
     가위바위보 심의위원회 · 본 사이트는 패러디 목적의 웹페이지입니다.<br>
     가위바위보 규정 및 심의판례는 실제 효력이 없습니다.<br>
-    <span style="opacity:.6; font-size:.8em;">v1.0.0</span>
+    <span style="opacity:.6; font-size:.8em;">v1.1.0</span>
   </div>
 </footer>
 
@@ -828,12 +829,14 @@
     "위원회는 전원일치로 원판정에 하자가 없다고 의결하였다."
   ];
 
-  let lastPlayAt = 0;
-  const PLAY_COOLDOWN_MS = 800;
+  let isPlaying = false;
+  function setPickBtnsDisabled(disabled){
+    document.querySelectorAll('.pick-btn').forEach(b => b.disabled = disabled);
+  }
   async function playGame(userPick){
-    const now = Date.now();
-    if(now - lastPlayAt < PLAY_COOLDOWN_MS) return; // 짧은 간격 연타/자동화 방지
-    lastPlayAt = now;
+    if(isPlaying) return; // 요청 진행 중 중복 클릭/연타 방지 (타이머 대신 실제 진행 상태로 판단)
+    isPlaying = true;
+    setPickBtnsDisabled(true);
     const committeePick = ["가위","바위","보"][Math.floor(Math.random()*3)];
     let result, badgeClass, badgeLabel, order;
     if(userPick === committeePick){
@@ -872,15 +875,27 @@
 
     lastGameId = null;
     if(supabaseReady){
-      const { data, error } = await sb
-        .from('game_results')
-        .insert({ user_pick: userPick, committee_pick: committeePick, result })
-        .select('id')
-        .single();
-      if(!error && data) lastGameId = data.id;
-      // 매번 정리하면 대국마다 추가 요청이 붙으므로, 몇 판에 한 번만 정리
-      trimCounter = (trimCounter + 1) % TRIM_EVERY_N_PLAYS;
-      if(trimCounter === 0) trimOldGameResults();
+      try{
+        // 최근 목록용 insert와, 절대 줄어들지 않는 누적 카운터 rpc를 동시에 요청
+        const [insertRes] = await Promise.all([
+          sb.from('game_results')
+            .insert({ user_pick: userPick, committee_pick: committeePick, result })
+            .select('id')
+            .single(),
+          sb.rpc('record_game_result', { p_result: result, p_user_pick: userPick })
+            .then(({error}) => { if(error) console.error('record_game_result error:', error); })
+        ]);
+        if(!insertRes.error && insertRes.data) lastGameId = insertRes.data.id;
+        // 매번 정리하면 대국마다 추가 요청이 붙으므로, 몇 판에 한 번만 정리
+        trimCounter = (trimCounter + 1) % TRIM_EVERY_N_PLAYS;
+        if(trimCounter === 0) trimOldGameResults();
+      } finally {
+        isPlaying = false;
+        setPickBtnsDisabled(false);
+      }
+    } else {
+      isPlaying = false;
+      setPickBtnsDisabled(false);
     }
   }
 
@@ -919,7 +934,10 @@
     e.target.disabled = true;
     e.target.textContent = '심의 완료';
     if(supabaseReady && lastGameId){
-      await sb.from('game_results').update({ appealed: true }).eq('id', lastGameId);
+      await Promise.all([
+        sb.from('game_results').update({ appealed: true }).eq('id', lastGameId),
+        sb.rpc('record_appeal').then(({error}) => { if(error) console.error('record_appeal error:', error); })
+      ]);
     }
   });
 
@@ -930,27 +948,34 @@
       subEl.textContent = "Supabase 설정이 필요합니다 (관리자 안내 참고)";
       return;
     }
-    subEl.textContent = "모의 대국 탭에서 쌓인 실제 기록을 집계합니다.";
+    subEl.textContent = "위원회 설립 이후 누적된 실제 기록을 집계합니다.";
 
-    const [{count: total}, {count: drawCount}, {count: loseCount}, {count: appealCount}] = await Promise.all([
-      sb.from('game_results').select('*', { count:'exact', head:true }),
-      sb.from('game_results').select('*', { count:'exact', head:true }).eq('result','draw'),
-      sb.from('game_results').select('*', { count:'exact', head:true }).eq('result','lose'),
-      sb.from('game_results').select('*', { count:'exact', head:true }).eq('appealed', true)
-    ]);
+    // 최근 10건만 남기고 정리되는 game_results가 아니라,
+    // 절대 줄어들지 않는 누적 카운터(game_counters)에서 집계값을 읽어온다.
+    const { data: counters, error: counterErr } = await sb
+      .from('game_counters')
+      .select('total_games,win_count,lose_count,draw_count,appeal_count,scissors_count,rock_count,paper_count')
+      .eq('id', 1)
+      .single();
 
-    const t = total || 0;
+    if(counterErr || !counters){
+      subEl.textContent = "누적 통계를 불러오지 못했습니다 (game_counters 테이블/RPC 설정을 확인해 주세요).";
+    }
+
+    const t = (counters && counters.total_games) || 0;
+    const drawCount = (counters && counters.draw_count) || 0;
+    const loseCount = (counters && counters.lose_count) || 0;
+    const appealCount = (counters && counters.appeal_count) || 0;
+
     document.getElementById('statTotal').textContent = t.toLocaleString('ko-KR') + '건';
     document.getElementById('statDraw').textContent = t ? ((drawCount/t)*100).toFixed(1) + '%' : '0%';
     document.getElementById('statCommitteeWin').textContent = t ? ((loseCount/t)*100).toFixed(1) + '%' : '0%';
-    document.getElementById('statAppeal').textContent = (appealCount || 0).toLocaleString('ko-KR') + '건';
+    document.getElementById('statAppeal').textContent = appealCount.toLocaleString('ko-KR') + '건';
 
     if(t > 0){
-      const [{count: sCount}, {count: rCount}, {count: pCount}] = await Promise.all([
-        sb.from('game_results').select('*', { count:'exact', head:true }).eq('user_pick','가위'),
-        sb.from('game_results').select('*', { count:'exact', head:true }).eq('user_pick','바위'),
-        sb.from('game_results').select('*', { count:'exact', head:true }).eq('user_pick','보')
-      ]);
+      const sCount = counters.scissors_count || 0;
+      const rCount = counters.rock_count || 0;
+      const pCount = counters.paper_count || 0;
       const setBar = (barId, pctId, n) => {
         const pct = (n / t) * 100;
         document.getElementById(barId).style.width = pct + '%';
