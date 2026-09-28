@@ -324,6 +324,9 @@
   table.members th{background:var(--paper-alt); color:var(--navy); font-weight:600; font-size:12.5px;}
   table.members td.hand{white-space:nowrap;}
 
+  .pause-warn{margin:10px 0; padding:10px 14px; font-size:13px; line-height:1.6; border:1px solid var(--line); background:var(--paper-alt); color:var(--navy);}
+  .pause-warn.warn{border-color:#c9a227; background:#fff8e1;}
+  .pause-warn.danger{border-color:var(--stamp-red); background:#fdecea; color:var(--stamp-red); font-weight:700;}
   .chair-login{margin:16px 0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
   .chair-toggle{
     background:none; border:1px solid var(--line); color:var(--navy);
@@ -602,6 +605,7 @@
       <h3>위원 명부</h3>
       <div class="sub" id="memberCount">불러오는 중…</div>
 
+      <div class="pause-warn" id="pauseWarn" style="display:none;"></div>
       <div class="chair-login" id="chairLoggedOut">
         <button class="chair-toggle" id="chairToggleBtn">위원장 로그인</button>
         <div class="chair-login-form" id="chairLoginForm" style="display:none;">
@@ -692,7 +696,7 @@
   <div class="wrap">
     가위바위보 심의위원회 · 본 사이트는 패러디 목적의 웹페이지입니다.<br>
     가위바위보 규정 및 심의판례는 실제 효력이 없습니다.<br>
-    <span style="opacity:.6; font-size:.8em;">v1.2.0</span>
+    <span style="opacity:.6; font-size:.8em;">v1.3.0</span>
   </div>
 </footer>
 
@@ -1197,7 +1201,39 @@
       chairLoggedIn.style.display = isChair ? 'flex' : 'none';
       if(chairLoginForm) chairLoginForm.style.display = 'none';
       loadMembers();
+      checkPauseRisk();
     });
+  }
+
+  // ===== Supabase 자동 정지 사전 경고 (위원장 전용) =====
+  // 무료 플랜은 약 7일간 활동이 없으면 프로젝트가 정지됨 → 마지막 실제 기록(위원 가입/대국) 시각으로 남은 기간을 추정
+  const PAUSE_LIMIT_DAYS = 7;
+  const PAUSE_WARN_DAYS = 5;
+  async function checkPauseRisk(){
+    const el = document.getElementById('pauseWarn');
+    if(!el) return;
+    if(!isChair || !supabaseReady){ el.style.display = 'none'; return; }
+    try{
+      const [m, g] = await Promise.all([
+        sb.from('members').select('created_at').order('created_at', { ascending:false }).limit(1),
+        sb.from('game_results').select('created_at').order('created_at', { ascending:false }).limit(1)
+      ]);
+      const times = [m.data, g.data].flat().filter(Boolean).map(r => new Date(r.created_at).getTime());
+      if(!times.length){ el.style.display = 'none'; return; }
+      const idleDays = (Date.now() - Math.max(...times)) / 86400000;
+      const left = Math.ceil(PAUSE_LIMIT_DAYS - idleDays);
+      el.className = 'pause-warn';
+      if(idleDays >= PAUSE_LIMIT_DAYS){
+        el.classList.add('danger');
+        el.textContent = `⚠ 마지막 기록 후 ${Math.floor(idleDays)}일 경과 - Supabase 프로젝트가 이미 정지되었거나 곧 정지될 수 있습니다. 대시보드에서 Restore project 를 확인하세요.`;
+      } else if(idleDays >= PAUSE_WARN_DAYS){
+        el.classList.add('warn');
+        el.textContent = `⚠ 마지막 기록 후 ${Math.floor(idleDays)}일 경과 - 약 ${Math.max(left,1)}일 내 활동이 없으면 Supabase가 자동 정지됩니다.`;
+      } else {
+        el.textContent = `Supabase 상태 양호 - 마지막 기록 ${Math.floor(idleDays)}일 전 (정지 예정까지 약 ${left}일)`;
+      }
+      el.style.display = 'block';
+    } catch(e){ el.style.display = 'none'; }
   }
 
   function escapeHtml(str){
