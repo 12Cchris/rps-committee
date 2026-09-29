@@ -2,42 +2,27 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<!-- 중앙선물위원회 사이트 v1.1.1 -->
+<meta name="version" content="1.1.1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>가위바위보 심의위원회</title>
-<meta name="description" content="가위바위보 심의위원회 공식 웹사이트 — 규정, 심의판례, 승부 현황을 확인하세요.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="가위바위보 심의위원회">
-<meta property="og:description" content="공정한 승부, 투명한 판정 — 모든 가위바위보의 적법성을 심의합니다.">
-<meta property="og:image" content="og-image.png">
-<meta property="og:locale" content="ko_KR">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="가위바위보 심의위원회">
-<meta name="twitter:description" content="공정한 승부, 투명한 판정 — 모든 가위바위보의 적법성을 심의합니다.">
-<meta name="twitter:image" content="og-image.png">
+<title>중앙선물위원회</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script src="./supabase.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy-deep:#0f1d33;
-    --navy:#1b2c47;
-    --navy-soft:#28405f;
-    --paper:#f6f3ec;
-    --paper-alt:#efe9db;
-    --ink:#23201b;
-    --gray:#6b665c;
-    --line:#d8d2c2;
-    --gold:#b08d3f;
-    --gold-soft:#e4d6ad;
-    --stamp-red:#a3382f;
-    --stamp-green:#3f6b4a;
+    --paper:#efeee5;
+    --paper-dark:#e6e4d6;
+    --navy:#142c4b;
+    --navy-light:#24476f;
+    --ink:#211e18;
+    --ink-soft:#4a463c;
+    --seal:#9e2b25;
+    --line:#c6c1ab;
+    --gold:#a4813f;
+    --org-line:rgba(20,44,75,.45);
   }
+
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{
@@ -45,1281 +30,768 @@
     background:var(--paper);
     color:var(--ink);
     font-family:'Noto Sans KR',sans-serif;
-    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
   }
   h1,h2,h3,.serif{font-family:'Noto Serif KR',serif;}
   a{color:inherit;}
-  .skip-link{
-    position:absolute; left:-999px; top:0;
-    background:var(--gold); color:var(--navy-deep);
-    padding:10px 16px; z-index:200; font-weight:600;
-  }
-  .skip-link:focus{left:8px; top:8px;}
 
-  /* ===== Top utility bar ===== */
-  .util-bar{
-    background:var(--navy-deep);
-    color:#cdd6e3;
-    font-size:12.5px;
+  /* ===== 상단 유틸바 ===== */
+  .utilbar{
+    background:var(--ink);
+    color:#cfc9b8;
+    font-size:12px;
   }
-  .util-bar .wrap{
-    max-width:1080px; margin:0 auto; padding:6px 20px;
-    display:flex; justify-content:space-between; align-items:center;
+  .utilbar .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:6px 20px;
+    display:flex;
+    justify-content:flex-end;
+    gap:16px;
   }
-  .util-bar span{opacity:.85;}
+  .utilbar span{opacity:.85;}
+  .utilbar-link{
+    opacity:.85;
+    color:#cfc9b8;
+    text-decoration:none;
+    background:none;
+    border:none;
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:12px;
+    cursor:pointer;
+    padding:0;
+  }
+  .utilbar-link:hover{opacity:1;text-decoration:underline;}
+  .utilbar-btn{font-weight:700;letter-spacing:.02em;}
 
-  /* ===== Header ===== */
-  header.site-head{
+  /* ===== 로고바 ===== */
+  .logobar{
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .logobar .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:22px 20px 18px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .emblem-wrap{
+    width:54px;height:54px;
+    border-radius:50%;
+    flex:none;
+    overflow:hidden;
+  }
+  .emblem-wrap img{
+    width:100%;height:100%;
+    object-fit:cover;
+    transform:scale(1.46);
+    display:block;
+  }
+  .logobar .title{
+    font-size:26px;
+    font-weight:700;
+    color:var(--navy);
+    letter-spacing:1px;
+  }
+  .logobar .title small{
+    display:block;
+    font-family:'Noto Sans KR',sans-serif;
+    font-size:12px;
+    font-weight:400;
+    color:var(--ink-soft);
+    letter-spacing:2px;
+    margin-top:3px;
+  }
+
+  /* ===== 내비게이션 ===== */
+  nav.mainnav{
     background:var(--navy);
-    border-bottom:3px solid var(--gold);
   }
-  .head-wrap{
-    max-width:1080px; margin:0 auto; padding:22px 20px 20px;
-    display:flex; align-items:center; gap:18px;
+  nav.mainnav .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    display:flex;
+    padding:0 20px;
   }
-  .emblem{flex:0 0 auto;}
-  .emblem img{display:block; width:60px; height:60px; border-radius:50%;}
-  .head-text h1{
-    margin:0; color:#f4efe0; font-size:26px; font-weight:700;
+  nav.mainnav a{
+    display:block;
+    padding:14px 22px;
+    color:#e9e6da;
+    text-decoration:none;
+    font-size:14.5px;
+    font-weight:500;
+    border-right:1px solid rgba(255,255,255,.12);
+  }
+  nav.mainnav a:hover{background:var(--navy-light);}
+
+  main{max-width:1040px;margin:0 auto;padding:0 20px;}
+
+  /* ===== 공고 히어로 ===== */
+  .notice{
+    position:relative;
+    margin-top:44px;
+    background:#fbfaf5;
+    border:1px solid var(--line);
+    padding:52px 56px 44px;
+    overflow:hidden;
+  }
+  .notice::before{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border:1px solid var(--line);
+    pointer-events:none;
+  }
+  .notice .docnum{
+    font-size:13px;
+    color:var(--ink-soft);
     letter-spacing:.5px;
   }
-  .head-text p{
-    margin:6px 0 0; color:#aebbd0; font-size:13px;
+  .notice h1{
+    margin:18px 0 8px;
+    font-size:34px;
+    line-height:1.4;
+    color:var(--ink);
+    font-weight:700;
+  }
+  .notice .date{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:28px;
+  }
+  .notice p{
+    font-size:15.5px;
+    line-height:2;
+    color:var(--ink);
+    max-width:640px;
+  }
+  .notice .from{
+    margin-top:36px;
+    font-size:16px;
+    font-weight:600;
+    color:var(--navy);
   }
 
-  /* ===== Nav ===== */
-  nav.tabs{
-    background:var(--navy-soft);
-    border-bottom:1px solid rgba(255,255,255,.08);
+  .seal{
+    position:absolute;
+    right:54px;
+    bottom:40px;
+    width:118px;height:118px;
+    border-radius:50%;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(20,44,75,.18);
+    opacity:0;
+    transform:scale(1.6) rotate(-8deg);
+    animation:stamp .5s .5s cubic-bezier(.2,.9,.3,1.2) forwards;
   }
-  .tabs-wrap{
-    max-width:1080px; margin:0 auto; padding:0 20px;
-    display:flex; gap:2px; overflow-x:auto;
+  .seal img{
+    width:100%;height:100%;
+    object-fit:cover;
+    transform:scale(1.46);
+    display:block;
   }
-  .tab-btn{
-    background:none; border:none; cursor:pointer;
-    color:#d7deea; font-family:'Noto Sans KR',sans-serif;
-    font-size:15px; font-weight:500;
-    padding:14px 18px;
-    border-bottom:3px solid transparent;
-    white-space:nowrap;
+  @keyframes stamp{
+    0%{opacity:0;transform:scale(1.7) rotate(-14deg);}
+    60%{opacity:.9;}
+    100%{opacity:.88;transform:scale(1) rotate(-8deg);}
   }
-  .tab-btn:hover{color:#fff;}
-  .tab-btn.active{
-    color:#fff; border-bottom-color:var(--gold); font-weight:700;
+  @media (prefers-reduced-motion: reduce){
+    .seal{animation:none;opacity:.88;transform:rotate(-8deg);}
   }
 
-  main{max-width:1080px; margin:0 auto; padding:40px 20px 80px;}
-  section.panel{display:none;}
-  section.panel.active{display:block; animation:fade .35s ease;}
-  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  /* ===== 섹션 공통 ===== */
+  section{padding:64px 0;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .kicker{
+    font-size:13px;
+    color:var(--seal);
+    font-weight:700;
+    letter-spacing:.5px;
+    margin-bottom:6px;
+  }
+  section h2{
+    font-size:24px;
+    font-weight:700;
+    color:var(--navy);
+    margin:0 0 30px;
+  }
 
-  /* ===== Intro / hero ===== */
-  .hero{
-    display:flex; gap:36px; align-items:flex-start;
-    padding-bottom:34px; border-bottom:1px solid var(--line);
-    margin-bottom:34px;
-    flex-wrap:wrap;
+  /* ===== 인사말 ===== */
+  .greeting{display:flex;gap:40px;align-items:flex-start;}
+  .greeting .portrait{
+    flex:none;
+    width:120px;height:150px;
+    background:var(--navy);
+    color:#efeee5;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif KR',serif;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:4px;
+    writing-mode:vertical-rl;
   }
-  .hero-main{flex:1 1 420px;}
-  .doc-no{
-    font-size:12.5px; color:var(--gray); letter-spacing:.3px; margin-bottom:10px;
+  .greeting .text p{
+    font-size:15.5px;
+    line-height:2;
+    color:var(--ink);
+    margin:0 0 18px;
   }
-  .hero h2{
-    font-size:30px; line-height:1.4; margin:0 0 14px; color:var(--navy);
+  .greeting .sign{
+    text-align:right;
+    font-size:15px;
+    color:var(--navy);
+    font-weight:700;
+    margin-top:22px;
   }
-  .hero p{color:var(--gray); font-size:15px; max-width:52ch;}
-  .stat-box{
-    flex:0 0 220px;
-    background:var(--paper-alt);
-    border:1px solid var(--line);
-    padding:20px;
+  .greeting .sign small{
+    display:block;
+    font-weight:400;
+    color:var(--ink-soft);
+    font-size:12.5px;
   }
-  .stat-box .num{
-    font-family:'Noto Serif KR',serif; font-size:32px; font-weight:700; color:var(--navy);
-  }
-  .stat-box .lbl{font-size:12.5px; color:var(--gray); margin-top:4px;}
 
-  .intro-grid{
-    display:grid; grid-template-columns:1fr 1fr; gap:28px;
-  }
-  .intro-card{
-    border:1px solid var(--line); padding:22px; background:#fff;
-  }
-  .intro-card h3{margin:0 0 8px; font-size:17px; color:var(--navy);}
-  .intro-card p{margin:0; font-size:14px; color:var(--gray);}
-
-  /* ===== 규칙 (조문) ===== */
+  /* ===== 조문형 소개 ===== */
+  .articles{display:flex;flex-direction:column;gap:26px;}
   .article{
-    padding:20px 0; border-bottom:1px solid var(--line);
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:22px;
+    padding-bottom:24px;
+    border-bottom:1px dashed var(--line);
   }
-  .article:first-of-type{padding-top:0;}
-  .article h3{
-    font-size:17px; margin:0 0 10px; color:var(--navy);
-    display:flex; align-items:baseline; gap:8px;
+  .article:last-child{border-bottom:none;padding-bottom:0;}
+  .article .num{
+    font-family:'Noto Serif KR',serif;
+    font-weight:700;
+    color:var(--seal);
+    font-size:15px;
   }
-  .article h3 .no{color:var(--gold); font-weight:700;}
-  .article ol{margin:8px 0 0 0; padding-left:22px; font-size:14.5px; color:var(--ink);}
-  .article ol li{margin-bottom:6px;}
-  .article > p{font-size:14.5px; margin:0; color:var(--ink);}
-
-  /* ===== 판례 게시판 ===== */
-  .case-list{border-top:2px solid var(--navy);}
-  .case-item{border-bottom:1px solid var(--line);}
-  .case-head{
-    width:100%; text-align:left; background:none; border:none; cursor:pointer;
-    padding:16px 4px; display:flex; align-items:center; gap:14px;
-    font-family:'Noto Sans KR',sans-serif;
-  }
-  .case-head:hover{background:var(--paper-alt);}
-  .case-no{
-    flex:0 0 110px; font-size:12.5px; color:var(--gray); font-variant-numeric:tabular-nums;
-  }
-  .case-title{flex:1; font-size:15px; color:var(--ink); font-weight:500;}
-  .badge{
-    flex:0 0 auto; font-size:12px; font-weight:700; padding:4px 10px;
-    border:1px solid currentColor; letter-spacing:.3px;
-  }
-  .badge.grant{color:var(--stamp-green);}
-  .badge.deny{color:var(--stamp-red);}
-  .badge.dismiss{color:var(--gray);}
-  .case-arrow{flex:0 0 16px; color:var(--gray); transition:transform .2s;}
-  .case-item.open .case-arrow{transform:rotate(90deg);}
-  .case-body{
-    display:none; padding:0 4px 22px 4px; font-size:14px; color:var(--ink);
-  }
-  .case-item.open .case-body{display:block;}
-  .case-body .row{margin-bottom:10px;}
-  .case-body .row b{
-    display:inline-block; min-width:64px; color:var(--navy); font-weight:600;
-  }
-
-  /* ===== 승부현황 ===== */
-  .status-grid{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:36px;
-  }
-  .kpi{
-    background:var(--navy); color:#f4efe0; padding:18px;
-  }
-  .kpi .num{font-family:'Noto Serif KR',serif; font-size:26px; font-weight:700; color:#fff;}
-  .kpi .lbl{font-size:12px; color:#b8c2d6; margin-top:4px;}
-
-  .bar-block{margin-bottom:30px;}
-  .bar-block h3{font-size:15px; color:var(--navy); margin:0 0 12px;}
-  .bar-row{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
-  .bar-row .name{flex:0 0 60px; font-size:13.5px; color:var(--ink);}
-  .bar-track{flex:1; background:var(--paper-alt); height:14px; position:relative;}
-  .bar-fill{height:100%; background:var(--gold);}
-  .bar-row .pct{flex:0 0 44px; font-size:13px; color:var(--gray); text-align:right;}
-
-  table.appeal{
-    width:100%; border-collapse:collapse; font-size:14px;
-  }
-  table.appeal th, table.appeal td{
-    border:1px solid var(--line); padding:10px 12px; text-align:left;
-  }
-  table.appeal th{
-    background:var(--paper-alt); color:var(--navy); font-weight:600; font-size:13px;
-  }
-
-  footer{
-    background:var(--navy-deep); color:#9aa6ba; font-size:12.5px;
-    padding:26px 20px; margin-top:50px;
-  }
-  footer .wrap{max-width:1080px; margin:0 auto;}
-
-  /* ===== 모의 대국 ===== */
-  .game-score{
-    display:flex; gap:14px; margin-bottom:30px;
-  }
-  .score-cell{
-    flex:1; background:var(--paper-alt); border:1px solid var(--line);
-    padding:16px; text-align:center;
-  }
-  .score-num{font-family:'Noto Serif KR',serif; font-size:26px; font-weight:700; color:var(--navy);}
-  .score-lbl{font-size:12.5px; color:var(--gray); margin-top:4px;}
-
-  .game-picks{
-    display:flex; gap:14px; margin-bottom:30px; flex-wrap:wrap;
-  }
-  .pick-btn{
-    flex:1 1 140px; background:#fff; border:1px solid var(--line); cursor:pointer;
-    padding:22px 10px; display:flex; flex-direction:column; align-items:center; gap:8px;
-    font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:600; color:var(--navy);
-    transition:border-color .15s, background .15s;
-  }
-  .pick-btn:hover{border-color:var(--gold); background:var(--paper-alt);}
-  .pick-btn .pick-emoji{font-size:34px;}
-  .pick-btn:disabled{opacity:.5; cursor:wait;}
-
-  .verdict-box{
-    border:1px solid var(--line); border-top:3px solid var(--navy);
-    background:#fff; padding:22px; max-width:520px;
-  }
-  .verdict-head{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--line);
-  }
-  .verdict-row{margin-bottom:10px; font-size:14.5px; color:var(--ink);}
-  .verdict-row b{display:inline-block; min-width:78px; color:var(--navy); font-weight:600;}
-  .appeal-btn{
-    margin-top:8px; background:var(--navy); color:#f4efe0; border:none;
-    padding:10px 18px; font-size:13.5px; font-weight:600; cursor:pointer;
-    font-family:'Noto Sans KR',sans-serif;
-  }
-  .appeal-btn:hover{background:var(--navy-soft);}
-  .appeal-btn:disabled{opacity:.45; cursor:default;}
-  .appeal-result{
-    margin-top:12px; font-size:13.5px; color:var(--gray);
-    padding-top:12px; border-top:1px dashed var(--line); display:none;
-  }
-  .appeal-result.show{display:block;}
-
-  /* ===== 위원 가입 ===== */
-  .join-layout{display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:start;}
-  .join-form label{
-    display:block; font-size:13.5px; font-weight:600; color:var(--navy);
-    margin:16px 0 6px;
-  }
-  .join-form label:first-child{margin-top:0;}
-  .join-form input[type=text], .join-form select, .join-form textarea{
-    width:100%; border:1px solid var(--line); background:#fff;
-    padding:10px 12px; font-size:14.5px; font-family:'Noto Sans KR',sans-serif;
+  .article .body h3{
+    margin:0 0 8px;
+    font-size:16.5px;
     color:var(--ink);
   }
-  .join-form textarea{resize:vertical; min-height:70px;}
-  .join-form input:focus, .join-form select:focus, .join-form textarea:focus{
-    outline:2px solid var(--gold); outline-offset:1px;
-  }
-  .join-submit{
-    margin-top:20px; background:var(--navy); color:#f4efe0; border:none;
-    padding:12px 22px; font-size:14.5px; font-weight:600; cursor:pointer;
-    font-family:'Noto Sans KR',sans-serif;
-  }
-  .join-submit:hover{background:var(--navy-soft);}
-  .join-submit:disabled{opacity:.5; cursor:default;}
-  .join-msg{margin-top:12px; font-size:13.5px;}
-  .join-msg.error{color:var(--stamp-red);}
-  .join-msg.ok{color:var(--stamp-green);}
-
-  .certificate{
-    border:2px solid var(--gold); padding:30px 26px; background:#fffdf7;
-    text-align:center; position:relative; display:none;
-  }
-  .certificate.show{display:block;}
-  .certificate .cert-eyebrow{font-size:12px; letter-spacing:2px; color:var(--gray);}
-  .certificate h3{font-size:22px; margin:10px 0 4px; color:var(--navy);}
-  .certificate .cert-no{font-size:12.5px; color:var(--gray); margin-bottom:18px;}
-  .certificate .cert-name{font-family:'Noto Serif KR',serif; font-size:28px; font-weight:700; color:var(--ink); margin:10px 0;}
-  .certificate .cert-hand{font-size:15px; color:var(--navy); margin-bottom:16px;}
-  .certificate .cert-body{font-size:13.5px; color:var(--gray); line-height:1.7; max-width:38ch; margin:0 auto 18px;}
-  .certificate .cert-seal{width:56px; height:56px; margin:0 auto; border-radius:50%;}
-  .certificate .cert-date{font-size:12.5px; color:var(--gray); margin-top:14px;}
-
-  .member-directory{margin-top:44px; border-top:1px solid var(--line); padding-top:28px;}
-  .member-directory h3{font-size:17px; color:var(--navy); margin:0 0 4px;}
-  .member-directory .sub{font-size:13px; color:var(--gray); margin-bottom:16px;}
-  table.members{width:100%; border-collapse:collapse; font-size:14px;}
-  table.members th, table.members td{border:1px solid var(--line); padding:9px 12px; text-align:left;}
-  table.members th{background:var(--paper-alt); color:var(--navy); font-weight:600; font-size:12.5px;}
-  table.members td.hand{white-space:nowrap;}
-
-  .pause-warn{margin:10px 0; padding:10px 14px; font-size:13px; line-height:1.6; border:1px solid var(--line); background:var(--paper-alt); color:var(--navy);}
-  .pause-warn.warn{border-color:#c9a227; background:#fff8e1;}
-  .pause-warn.danger{border-color:var(--stamp-red); background:#fdecea; color:var(--stamp-red); font-weight:700;}
-  .chair-login{margin:16px 0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
-  .chair-toggle{
-    background:none; border:1px solid var(--line); color:var(--navy);
-    font-size:12.5px; font-weight:600; padding:7px 12px; cursor:pointer;
-    font-family:'Noto Sans KR',sans-serif;
-  }
-  .chair-toggle:hover{border-color:var(--gold);}
-  .chair-login-form{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; width:100%;}
-  .chair-login-form input{
-    border:1px solid var(--line); padding:8px 10px; font-size:13.5px;
-    font-family:'Noto Sans KR',sans-serif;
-  }
-  .chair-submit{
-    background:var(--navy); color:#f4efe0; border:none; padding:8px 16px;
-    font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;
-  }
-  .chair-submit:hover{background:var(--navy-soft);}
-  .chair-msg{font-size:12.5px; color:var(--stamp-red); width:100%;}
-  .chair-badge{
-    font-size:12.5px; font-weight:700; color:var(--stamp-green);
-    border:1px solid var(--stamp-green); padding:6px 12px;
-  }
-  .expel-btn{
-    background:none; border:1px solid var(--stamp-red); color:var(--stamp-red);
-    font-size:12px; font-weight:600; padding:5px 10px; cursor:pointer;
-    font-family:'Noto Sans KR',sans-serif;
-  }
-  .expel-btn:hover{background:var(--stamp-red); color:#fff;}
-
-  .visibility-toggle{
-    display:flex; align-items:center; gap:6px; font-size:12.5px;
-    color:var(--navy); font-weight:600; cursor:pointer;
-  }
-  .visibility-toggle input{width:16px; height:16px; cursor:pointer;}
-  .members-private-notice{
-    background:var(--paper-alt); border:1px dashed var(--line);
-    padding:18px; font-size:13.5px; color:var(--gray); text-align:center;
-    margin-bottom:16px;
-  }
-  tr.chair-row{background:var(--paper-alt);}
-  tr.chair-row td{font-weight:700; color:var(--navy);}
-  .chair-no-badge{
-    display:inline-block; background:var(--gold); color:#fff;
-    font-size:11.5px; font-weight:700; padding:3px 8px;
+  .article .body p{
+    margin:0;
+    font-size:14.5px;
+    line-height:1.9;
+    color:var(--ink-soft);
   }
 
-  .sort-bar{
-    display:flex; align-items:center; gap:8px; margin:10px 0 12px;
-    font-size:13px; color:var(--navy);
+  /* ===== 소관업무 테이블 ===== */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14.5px;
   }
-  .sort-bar select{
-    border:1px solid var(--line); background:#fff; padding:6px 10px;
-    font-size:13px; font-family:'Noto Sans KR',sans-serif; color:var(--ink);
+  .duties th, .duties td{
+    text-align:left;
+    padding:14px 16px;
+    border-top:1px solid var(--line);
+    vertical-align:top;
+  }
+  .duties thead th{
+    background:var(--navy);
+    color:#efeee5;
+    font-weight:500;
+    font-size:13.5px;
+    border-top:none;
+  }
+  .duties td:first-child{
+    width:190px;
+    font-weight:600;
+    color:var(--navy);
+  }
+  .duties tbody tr:last-child td{border-bottom:1px solid var(--line);}
+
+  /* ===== 조직도 ===== */
+  .orgchart{display:flex;flex-direction:column;align-items:center;gap:0;}
+  .org-box{
+    background:var(--paper);
+    border:1.5px solid var(--navy);
+    color:var(--navy);
+    font-weight:600;
+    font-size:14.5px;
+    padding:12px 22px;
+    text-align:center;
+  }
+  .org-box.top{background:var(--navy);color:#efeee5;}
+  .org-branch{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+    width:100%;
+    max-width:760px;
+  }
+  .org-branch .org-box{
+    position:relative;
+    margin-top:26px;
+    font-size:13.5px;font-weight:500;padding:11px 12px;
+  }
+  /* 각 부서 박스 위로 올라가는 세로선 */
+  .org-branch .org-box::before{
+    content:"";position:absolute;
+    top:-26px;left:50%;
+    width:1px;height:26px;
+    background:var(--org-line);
+  }
+  /* 부서들을 잇는 가로선 (박스 사이 간격까지 이어 붙임) */
+  .org-branch .org-box::after{
+    content:"";position:absolute;
+    top:-26px;left:-10px;right:-10px;
+    height:1px;
+    background:var(--org-line);
+  }
+  .org-branch .org-box:first-child::after{left:50%;}
+  .org-branch .org-box:last-child::after{right:50%;}
+  .connector{width:1px;height:26px;background:var(--org-line);}
+
+  /* ===== 고시·공고 게시판 ===== */
+  .board td, .board th{
+    padding:13px 14px;
+    font-size:14px;
+    border-top:1px solid var(--line);
+  }
+  .board thead th{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-weight:500;
+    border-top:none;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px;
+  }
+  .board td.num{color:var(--ink-soft);width:56px;}
+  .board td.date{color:var(--ink-soft);width:150px;text-align:right;}
+  .board tr:hover td{background:var(--paper-dark);}
+
+  .board tr.board-main{cursor:pointer;}
+  .board tr.board-main.no-toggle{cursor:default;}
+  .board td.title{position:relative;}
+  .title-btn{
+    background:none;border:none;padding:0;margin:0;
+    font:inherit;color:inherit;text-align:left;cursor:pointer;
+  }
+  .title-btn:focus-visible{outline:2px solid var(--navy);outline-offset:3px;}
+  .title-toggle{
+    display:inline-block;width:12px;margin-right:8px;
+    color:var(--ink-soft);font-size:11px;
+    transition:transform .18s ease;
+  }
+  .title-toggle.open{transform:rotate(90deg);}
+  .board tr.board-detail-row td{padding:0;border-top:none;}
+  .board-detail{
+    background:var(--paper-dark);
+    padding:18px 22px 26px 40px;
+    border-top:1px solid var(--line);
+    font-size:14px;line-height:1.85;color:var(--ink);
+    white-space:pre-wrap;
+  }
+  .board-detail-empty{color:var(--ink-soft);font-style:italic;}
+
+  .board-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:30px;
+  }
+  .board-head h2{margin:0;}
+
+  /* ===== 오시는 길 ===== */
+  .contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+  .contact .mapbox{
+    background:var(--paper-dark);
+    border:1px solid var(--line);
+    height:220px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    letter-spacing:.5px;
+  }
+  .contact dl{margin:0;font-size:14.5px;line-height:2.1;}
+  .contact dt{color:var(--ink-soft);display:inline-block;width:80px;}
+  .contact dd{margin:0;display:inline;}
+  .contact .row{margin-bottom:2px;}
+
+  footer{
+    background:var(--ink);
+    color:#a7a292;
+    padding:34px 20px 26px;
+    margin-top:0;
+  }
+  footer .wrap{max-width:1040px;margin:0 auto;}
+  footer .fname{color:#efeee5;font-weight:600;font-size:14px;margin-bottom:8px;}
+  footer p{font-size:12.5px;line-height:1.9;margin:0 0 4px;}
+  footer .disclaimer{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,.12);
+    font-size:11.5px;
+    color:#7a7666;
   }
 
-  @media (max-width:760px){
-    .join-layout{grid-template-columns:1fr;}
-  }
-
-  @media (max-width:640px){
-    .intro-grid{grid-template-columns:1fr;}
-    .status-grid{grid-template-columns:repeat(2,1fr);}
-    .hero{flex-direction:column;}
-    .stat-box{flex:1 1 auto;}
-    .case-no{flex-basis:76px; font-size:11px;}
-    .tabs-wrap{flex-wrap:wrap; overflow-x:visible;}
-    .tab-btn{flex:1 1 auto; text-align:center; padding:12px 8px; font-size:14px;}
+  @media (max-width:720px){
+    .logobar .wrap{padding:18px 16px;}
+    .logobar .title{font-size:20px;}
+    nav.mainnav .wrap{overflow-x:auto;}
+    nav.mainnav a{padding:12px 14px;font-size:13px;white-space:nowrap;}
+    .notice{padding:34px 22px 30px;}
+    .notice h1{font-size:24px;}
+    .seal{width:84px;height:84px;right:20px;bottom:20px;}
+    .greeting{flex-direction:column;}
+    .article{grid-template-columns:1fr;gap:8px;}
+    .contact{grid-template-columns:1fr;}
+    .duties td:first-child{width:auto;}
+    .org-branch{grid-template-columns:1fr;gap:26px;max-width:260px;}
+    .org-branch .org-box{margin-top:0;}
+    .org-branch .org-box::after{display:none;}
   }
 </style>
 </head>
 <body>
-<a href="#main" class="skip-link">본문 바로가기</a>
 
-<div class="util-bar">
-  <div class="wrap">
-    <span>가위바위보 심의위원회 공식 웹사이트</span>
-    <span>설치근거: 심의위 규정 제1호</span>
-  </div>
-</div>
+<div class="utilbar"><div class="wrap">
+  <span data-ko="선물특별시 마음구" data-en="Gift Special City, Maeum-gu">선물특별시 마음구</span><a href="#main" class="utilbar-link" data-ko="본문바로가기" data-en="Skip to content">본문바로가기</a><button id="langToggle" class="utilbar-link utilbar-btn" type="button">ENG</button>
+</div></div>
 
-<header class="site-head">
-  <div class="head-wrap">
-    <div class="emblem">
-      <img src="logo.webp" alt="가위바위보 심의위원회 엠블럼" width="60" height="60">
-    </div>
-    <div class="head-text">
-      <h1>가위바위보 심의위원회</h1>
-      <p>공정한 승부, 투명한 판정 — 모든 가위바위보의 적법성을 심의합니다</p>
-    </div>
+<div class="logobar"><div class="wrap">
+  <div class="emblem-wrap"><img class="emblem-img" src="logo.webp" alt="중앙선물위원회 엠블럼" data-alt-ko="중앙선물위원회 엠블럼" data-alt-en="Central Gift Committee emblem"></div>
+  <div class="title"><span data-ko="중앙선물위원회" data-en="Central Gift Committee">중앙선물위원회</span>
+    <small data-ko="CENTRAL GIFT COMMITTEE&nbsp;·&nbsp;정성을 심의합니다" data-en="Reviewing the sincerity of every gift">CENTRAL GIFT COMMITTEE&nbsp;·&nbsp;정성을 심의합니다</small>
   </div>
-  <nav class="tabs">
-    <div class="tabs-wrap" id="tabsWrap">
-      <button class="tab-btn active" data-tab="intro">위원회 소개</button>
-      <button class="tab-btn" data-tab="rule">가위바위보 규정</button>
-      <button class="tab-btn" data-tab="case">심의판례</button>
-      <button class="tab-btn" data-tab="game">모의 대국</button>
-      <button class="tab-btn" data-tab="join">위원 가입</button>
-      <button class="tab-btn" data-tab="status">승부 현황</button>
-    </div>
-  </nav>
-</header>
+</div></div>
+
+<nav class="mainnav"><div class="wrap">
+  <a href="#greeting" data-ko="위원장 인사말" data-en="Greeting">위원장 인사말</a>
+  <a href="#about" data-ko="위원회 소개" data-en="About Us">위원회 소개</a>
+  <a href="#duties" data-ko="소관업무" data-en="Duties">소관업무</a>
+  <a href="#org" data-ko="조직도" data-en="Organization">조직도</a>
+  <a href="#board" data-ko="고시·공고" data-en="Notices">고시·공고</a>
+  <a href="#contact" data-ko="오시는 길" data-en="Location">오시는 길</a>
+</div></nav>
 
 <main id="main">
 
-  <!-- ================= 위원회 소개 ================= -->
-  <section class="panel active" id="panel-intro">
-    <div class="hero">
-      <div class="hero-main">
-        <div class="doc-no">심의위 소개자료 제2026-01호</div>
-        <h2>가위바위보의 공정성은,<br>더 이상 우연에 맡기지 않습니다.</h2>
-        <p>가위바위보 심의위원회는 승패를 둘러싼 모든 이의와 분쟁을 조사하고, 판정의 적법성을 심의하는 독립 기구입니다. 후출, 무효, 부정행위 여부를 가리며 국민 누구나 승복할 수 있는 판정 문화를 만듭니다.</p>
-      </div>
-      <div class="stat-box">
-        <div class="num">128,402건</div>
-        <div class="lbl">누적 심의 대상 대국 수</div>
+  <div class="notice">
+    <div class="docnum" data-ko="중앙선물위원회 공고 제2026-113호" data-en="Central Gift Committee Notice No. 2026-113">중앙선물위원회 공고 제2026-113호</div>
+    <h1 data-ko="중앙선물위원회 설립 및 운영에 관한 공고" data-en="Notice on the Establishment and Operation of the Central Gift Committee">중앙선물위원회 설립 및 운영에 관한 공고</h1>
+    <div class="date" data-ko="2026년 9월 7일" data-en="September 7, 2026">2026년 9월 7일</div>
+    <p data-ko="본 위원회는 국민 개개인이 선물을 고를 때 겪는 고민의 무게를 국가가 함께 나누어야 한다는 취지 아래 설립되었으며, 선물의 적정성 심의, 마니또 배정, 명절 선물 시세 조사 등 선물과 관련된 제반 업무를 관장한다. 이에 위원회의 설립 사실과 운영 방침을 아래와 같이 공고한다."
+       data-en="This committee was established on the principle that the nation should share in the burden every citizen carries when choosing a gift. It oversees all gift-related affairs, including reviewing gift appropriateness, assigning Secret Santas, and surveying holiday gift prices. The establishment of the committee and its operating policy are hereby announced as follows.">
+      본 위원회는 국민 개개인이 선물을 고를 때 겪는 고민의 무게를 국가가 함께 나누어야 한다는
+      취지 아래 설립되었으며, 선물의 적정성 심의, 마니또 배정, 명절 선물 시세 조사 등
+      선물과 관련된 제반 업무를 관장한다. 이에 위원회의 설립 사실과 운영 방침을 아래와 같이
+      공고한다.
+    </p>
+    <div class="from" data-ko="중앙선물위원회 위원장" data-en="Chairperson, Central Gift Committee">중앙선물위원회 위원장</div>
+    <div class="seal"><img src="logo.webp" alt="중앙선물위원회 인장" data-alt-ko="중앙선물위원회 인장" data-alt-en="Central Gift Committee seal"></div>
+  </div>
+
+  <section id="greeting">
+    <div class="kicker">GREETING</div>
+    <h2 data-ko="위원장 인사말" data-en="Chairperson's Greeting">위원장 인사말</h2>
+    <div class="greeting">
+      <div class="portrait" data-ko="위원장" data-en="Chair">위원장</div>
+      <div class="text">
+        <p data-ko="존경하는 국민 여러분, 언제나 받는 사람보다 고르는 사람이 더 오래 고민하는 나라, 대한민국입니다. 저희 중앙선물위원회는 그 오랜 고민의 시간을 조금이나마 덜어드리고자 출범하였습니다."
+           data-en="Dear citizens, in this country the one choosing a gift always agonizes longer than the one receiving it. The Central Gift Committee was founded to ease even a small part of that long deliberation.">
+          존경하는 국민 여러분, 언제나 받는 사람보다 고르는 사람이 더 오래 고민하는 나라,
+          대한민국입니다. 저희 중앙선물위원회는 그 오랜 고민의 시간을 조금이나마 덜어드리고자
+          출범하였습니다.
+        </p>
+        <p data-ko="누군가는 편지 한 장이 선물이 되고, 누군가는 백화점 상품권 앞에서 밤을 지새웁니다. 위원회는 이 모든 정성을 값으로 매기지 않되, 최소한의 기준과 방향은 제시하는 기관이 되고자 합니다. 무엇을 살지 고민하는 국민 여러분 곁에, 언제나 중앙선물위원회가 있겠습니다."
+           data-en="For some, a single letter is a gift; for others, a sleepless night is spent staring at a department store gift card. The committee will never put a price on sincerity, but it hopes to offer at least a minimal standard and direction. Whenever you're wondering what to buy, the Central Gift Committee will be right there with you.">
+          누군가는 편지 한 장이 선물이 되고, 누군가는 백화점 상품권 앞에서 밤을 지새웁니다.
+          위원회는 이 모든 정성을 값으로 매기지 않되, 최소한의 기준과 방향은 제시하는 기관이
+          되고자 합니다. 무엇을 살지 고민하는 국민 여러분 곁에, 언제나 중앙선물위원회가
+          있겠습니다.
+        </p>
       </div>
     </div>
-
-    <div class="intro-grid">
-      <div class="intro-card">
-        <h3>설치 목적</h3>
-        <p>일상 속 가위바위보에서 발생하는 판정 시비를 예방하고, 이의가 제기된 사안에 대해 공정하고 신속한 심의 절차를 제공하기 위해 설치되었습니다.</p>
-      </div>
-      <div class="intro-card">
-        <h3>주요 업무</h3>
-        <p>가위바위보 규정의 제정 및 개정, 승패 판정에 대한 이의신청 심의, 부정행위 조사, 심의판례의 공표 업무를 수행합니다.</p>
-      </div>
-      <div class="intro-card">
-        <h3>심의 절차</h3>
-        <p>이의신청 접수 → 사실관계 조사 → 심의위원회 의결 → 주문(인용·기각·각하) 통지 순으로 진행되며, 통상 처리기간은 즉시입니다.</p>
-      </div>
-      <div class="intro-card">
-        <h3>구성</h3>
-        <p>위원장 1인 및 위원 4인으로 구성되며, 가위·바위·보 각 진영의 이해상충을 방지하기 위해 위원은 무작위로 손모양을 배정받습니다.</p>
-      </div>
+    <div class="sign">
+      <span data-ko="중앙선물위원회 위원장" data-en="Chairperson, Central Gift Committee">중앙선물위원회 위원장</span>
+      <small data-ko="재미로 만든 가상의 직함입니다" data-en="A fictional title, created just for fun">재미로 만든 가상의 직함입니다</small>
     </div>
   </section>
 
-  <!-- ================= 규정 ================= -->
-  <section class="panel" id="panel-rule">
-    <div class="doc-no">가위바위보 심의위원회 규정 (2026. 3. 2. 개정)</div>
-    <h2 style="color:var(--navy); font-size:24px; margin-top:6px;">가위바위보 시행에 관한 규정</h2>
-
-    <div class="article">
-      <h3><span class="no">제1조</span>(목적)</h3>
-      <p>이 규정은 가위바위보의 공정하고 원활한 시행 및 승패 판정 기준을 정함을 목적으로 한다.</p>
-    </div>
-    <div class="article">
-      <h3><span class="no">제2조</span>(정의)</h3>
-      <ol>
-        <li>"가위"란 검지와 중지를 펴고 나머지 손가락을 접은 손모양을 말한다.</li>
-        <li>"바위"란 다섯 손가락을 모두 접어 쥔 손모양을 말한다.</li>
-        <li>"보"란 다섯 손가락을 모두 편 손모양을 말한다.</li>
-      </ol>
-    </div>
-    <div class="article">
-      <h3><span class="no">제3조</span>(승패의 결정)</h3>
-      <ol>
-        <li>가위는 보를 이긴다.</li>
-        <li>바위는 가위를 이긴다.</li>
-        <li>보는 바위를 이긴다.</li>
-        <li>동일한 손모양이 제출된 경우 무효로 하며, 제5조에 따라 재대국한다.</li>
-      </ol>
-    </div>
-    <div class="article">
-      <h3><span class="no">제4조</span>(동시성의 원칙)</h3>
-      <p>모든 당사자는 정해진 구호에 맞추어 동시에 손모양을 제출하여야 한다. 다른 당사자의 손모양을 확인한 후 자신의 손모양을 변경하거나 제출을 지연하는 행위는 "후출"로 보아 무효로 한다.</p>
-    </div>
-    <div class="article">
-      <h3><span class="no">제5조</span>(무효 및 재대국)</h3>
-      <p>다음 각 호의 경우 해당 대국을 무효로 하고 즉시 재대국한다.</p>
-      <ol>
-        <li>전원이 동일한 손모양을 제출한 경우</li>
-        <li>세 가지 손모양이 모두 제출되어 승패가 정해지지 않는 경우</li>
-        <li>제4조를 위반한 후출이 인정되는 경우</li>
-      </ol>
-    </div>
-    <div class="article">
-      <h3><span class="no">제6조</span>(부정행위의 금지)</h3>
-      <p>당사자는 다음 각 호의 행위를 하여서는 아니 된다.</p>
-      <ol>
-        <li>고의적인 제출 지연</li>
-        <li>제출 후 손모양의 임의 번복</li>
-        <li>사전 담합에 의한 결과 조작</li>
-      </ol>
-    </div>
-    <div class="article">
-      <h3><span class="no">제7조</span>(이의신청)</h3>
-      <p>판정 결과에 불복하는 당사자는 대국 종료 즉시 심의위원회에 이의를 신청할 수 있으며, 위원회는 이를 지체 없이 심의하여 인용, 기각 또는 각하로 의결한다.</p>
-    </div>
-  </section>
-
-  <!-- ================= 심의판례 ================= -->
-  <section class="panel" id="panel-case">
-    <div class="doc-no">심의판례 게시판 · 최근 심의순</div>
-    <h2 style="color:var(--navy); font-size:24px; margin-top:6px; margin-bottom:24px;">심의판례</h2>
-
-    <div class="case-list" id="caseList"></div>
-  </section>
-
-  <!-- ================= 모의 대국 ================= -->
-  <section class="panel" id="panel-game">
-    <div class="doc-no">모의 대국실 · 위원회 참관 대국</div>
-    <h2 style="color:var(--navy); font-size:24px; margin-top:6px; margin-bottom:10px;">모의 대국 체험</h2>
-    <p style="color:var(--gray); font-size:14px; margin:0 0 26px; max-width:56ch;">위원회를 상대로 직접 가위바위보를 두어보세요. 대국이 끝나면 즉시 판정문이 발부됩니다.</p>
-
-    <div class="game-score">
-      <div class="score-cell"><div class="score-num" id="scoreWin">0</div><div class="score-lbl">승리</div></div>
-      <div class="score-cell"><div class="score-num" id="scoreLose">0</div><div class="score-lbl">패배</div></div>
-      <div class="score-cell"><div class="score-num" id="scoreDraw">0</div><div class="score-lbl">무효</div></div>
-    </div>
-
-    <div class="game-picks">
-      <button class="pick-btn" data-pick="가위">
-        <span class="pick-emoji">✌️</span><span>가위</span>
-      </button>
-      <button class="pick-btn" data-pick="바위">
-        <span class="pick-emoji">✊</span><span>바위</span>
-      </button>
-      <button class="pick-btn" data-pick="보">
-        <span class="pick-emoji">✋</span><span>보</span>
-      </button>
-    </div>
-
-    <div id="verdictBox" class="verdict-box" style="display:none;">
-      <div class="verdict-head">
-        <span class="doc-no" id="verdictNo" style="margin:0;"></span>
-        <span class="badge" id="verdictBadge"></span>
-      </div>
-      <div class="verdict-row"><b>위원회 제출</b><span id="verdictCommittee"></span></div>
-      <div class="verdict-row"><b>귀하 제출</b><span id="verdictUser"></span></div>
-      <div class="verdict-row"><b>주문</b><span id="verdictOrder"></span></div>
-      <button class="appeal-btn" id="appealBtn">이의신청 제기</button>
-      <div class="appeal-result" id="appealResult"></div>
-    </div>
-  </section>
-
-  <!-- ================= 위원 가입 ================= -->
-  <section class="panel" id="panel-join">
-    <div class="doc-no">위원 가입 신청 · 누구나 신청 가능</div>
-    <h2 style="color:var(--navy); font-size:24px; margin-top:6px; margin-bottom:10px;">가위바위보 심의위원회 위원 가입</h2>
-    <p style="color:var(--gray); font-size:14px; margin:0 0 30px; max-width:60ch;">신청서를 제출하면 즉시 위촉장이 발급되며, 이름은 위원 명부에 공개적으로 등재됩니다. 실명 대신 닉네임을 사용하셔도 됩니다.</p>
-
-    <div class="join-layout">
-      <div class="join-form">
-        <label for="joinName">성명 (닉네임 가능)</label>
-        <input type="text" id="joinName" maxlength="20" placeholder="예: 홍길동">
-
-        <label for="joinHand">희망 손모양</label>
-        <select id="joinHand">
-          <option value="가위">가위</option>
-          <option value="바위">바위</option>
-          <option value="보">보</option>
-        </select>
-
-        <label for="joinReason">가입 사유 (선택)</label>
-        <textarea id="joinReason" maxlength="200" placeholder="예: 공정한 판정 문화에 기여하고 싶습니다."></textarea>
-
-        <button class="join-submit" id="joinSubmit">가입 신청</button>
-        <div class="join-msg" id="joinMsg"></div>
-      </div>
-
-      <div class="certificate" id="certificate">
-        <div class="cert-eyebrow">위촉장</div>
-        <h3>가위바위보 심의위원회</h3>
-        <div class="cert-no" id="certNo"></div>
-        <div class="cert-name" id="certName"></div>
-        <div class="cert-hand" id="certHand"></div>
-        <div class="cert-body">위 사람을 가위바위보 심의위원회 위원으로 위촉하며, 공정한 판정을 위해 성실히 임할 것을 당부합니다.</div>
-        <img src="logo.webp" alt="위원회 직인" class="cert-seal" width="56" height="56" loading="lazy">
-        <div class="cert-date" id="certDate"></div>
-      </div>
-    </div>
-
-    <div class="member-directory">
-      <h3>위원 명부</h3>
-      <div class="sub" id="memberCount">불러오는 중…</div>
-
-      <div class="pause-warn" id="pauseWarn" style="display:none;"></div>
-      <div class="chair-login" id="chairLoggedOut">
-        <button class="chair-toggle" id="chairToggleBtn">위원장 로그인</button>
-        <div class="chair-login-form" id="chairLoginForm" style="display:none;">
-          <input type="text" id="chairEmail" placeholder="위원장 계정 이메일" autocomplete="username">
-          <input type="password" id="chairPw" placeholder="비밀번호" autocomplete="current-password">
-          <button class="chair-submit" id="chairLoginBtn">로그인</button>
-          <div class="chair-msg" id="chairMsg"></div>
+  <section id="about">
+    <div class="kicker">ABOUT</div>
+    <h2 data-ko="위원회 소개" data-en="About the Committee">위원회 소개</h2>
+    <div class="articles">
+      <div class="article">
+        <div class="num" data-ko="제1조" data-en="Article 1">제1조</div>
+        <div class="body">
+          <h3 data-ko="설치 목적" data-en="Purpose">설치 목적</h3>
+          <p data-ko="이 위원회는 선물 문화의 건전한 발전과 정성의 공정한 평가를 도모함을 목적으로 한다." data-en="This committee aims to promote the healthy development of gift-giving culture and the fair evaluation of sincerity.">이 위원회는 선물 문화의 건전한 발전과 정성의 공정한 평가를 도모함을 목적으로 한다.</p>
         </div>
       </div>
-      <div class="chair-login" id="chairLoggedIn" style="display:none;">
-        <span class="chair-badge">위원장 권한으로 로그인됨</span>
-        <button class="chair-toggle" id="chairLogoutBtn">로그아웃</button>
-        <label class="visibility-toggle">
-          <input type="checkbox" id="visibilityToggle">
-          <span id="visibilityLabel">위원 명부 공개</span>
-        </label>
+      <div class="article">
+        <div class="num" data-ko="제2조" data-en="Article 2">제2조</div>
+        <div class="body">
+          <h3 data-ko="설립일" data-en="Establishment Date">설립일</h3>
+          <p data-ko="본 위원회는 2026년 9월 7일 자로 설립되었으며, 선물을 고민하기에 특별히 이르거나 늦은 날은 없다는 판단 아래 이날을 설립일로 정하였다. 설립 이전 일자로 게재된 고시·공고는 마음이 먼저 앞선 것으로 보아 소급하여 그 효력을 인정한다." data-en="This committee was established on September 7, 2026, on the judgment that there is no day too early or too late to think about a gift, and so this day was chosen as the founding date. Notices dated before the founding are deemed to reflect sincerity running ahead of the paperwork, and are recognized retroactively.">본 위원회는 2026년 9월 7일 자로 설립되었으며, 선물을 고민하기에 특별히 이르거나
+          늦은 날은 없다는 판단 아래 이날을 설립일로 정하였다. 설립 이전 일자로 게재된 고시·공고는 마음이 먼저 앞선 것으로 보아 소급하여 그 효력을 인정한다.</p>
+        </div>
       </div>
-
-      <div class="members-private-notice" id="membersPrivateNotice" style="display:none;">
-        위원장이 위원 명부를 비공개로 설정하였습니다.
+      <div class="article">
+        <div class="num" data-ko="제3조" data-en="Article 3">제3조</div>
+        <div class="body">
+          <h3 data-ko="운영 원칙" data-en="Operating Principle">운영 원칙</h3>
+          <p data-ko="위원회는 가격이 아닌 정성을 우선 기준으로 삼되, 부득이한 경우 가성비를 참고할 수 있다." data-en="The committee prioritizes sincerity over price, though value for money may be considered when unavoidable.">위원회는 가격이 아닌 정성을 우선 기준으로 삼되, 부득이한 경우 가성비를 참고할 수 있다.</p>
+        </div>
       </div>
-
-      <div class="sort-bar" id="sortBar">
-        <label for="memberSort">정렬</label>
-        <select id="memberSort">
-          <option value="recent">최근 가입순</option>
-          <option value="oldest">오래된 가입순</option>
-          <option value="name">이름순 (가나다)</option>
-          <option value="hand">손모양별</option>
-        </select>
-      </div>
-
-      <table class="members" id="membersTable">
-        <thead><tr><th>번호</th><th>성명</th><th>손모양</th><th>가입일</th><th id="thAction" style="display:none;">관리</th></tr></thead>
-        <tbody id="memberTableBody"></tbody>
-      </table>
     </div>
   </section>
 
-  <!-- ================= 승부현황 ================= -->
-  <section class="panel" id="panel-status">
-    <div class="doc-no">승부 현황 통계 · 실시간 집계</div>
-    <h2 style="color:var(--navy); font-size:24px; margin-top:6px; margin-bottom:8px;">가위바위보 승부 현황</h2>
-    <p style="color:var(--gray); font-size:13.5px; margin:0 0 26px;" id="statusSub">모의 대국 탭에서 쌓인 실제 기록을 집계합니다.</p>
+  <section id="duties">
+    <div class="kicker">DUTIES</div>
+    <h2 data-ko="소관업무" data-en="Duties">소관업무</h2>
+    <table class="duties">
+      <thead>
+        <tr><th data-ko="구분" data-en="Category">구분</th><th data-ko="내용" data-en="Description">내용</th></tr>
+      </thead>
+      <tbody>
+        <tr><td data-ko="선물 적정성 심사" data-en="Gift Appropriateness Review">선물 적정성 심사</td><td data-ko="가격 대비 정성 지수(가정지수)를 산정하여 공표한다." data-en="Calculates and publishes the Sincerity-to-Price Index (SPI).">가격 대비 정성 지수(가정지수)를 산정하여 공표한다.</td></tr>
+        <tr><td data-ko="마니또 배정 총괄" data-en="Secret Santa Assignment">마니또 배정 총괄</td><td data-ko="전국 단위 마니또 매칭을 관장하며 배정 결과의 형평성을 점검한다." data-en="Oversees nationwide Secret Santa matching and reviews the fairness of assignments.">전국 단위 마니또 매칭을 관장하며 배정 결과의 형평성을 점검한다.</td></tr>
+        <tr><td data-ko="명절 선물 물가 조사" data-en="Holiday Gift Price Survey">명절 선물 물가 조사</td><td data-ko="참기름 세트, 스팸 세트 등 표준 품목의 시세를 조사·발표한다." data-en="Surveys and announces prices for standard items such as sesame oil sets and canned-meat gift sets.">참기름 세트, 스팸 세트 등 표준 품목의 시세를 조사·발표한다.</td></tr>
+        <tr><td data-ko="답례품 표준 지침" data-en="Return-Gift Standards">답례품 표준 지침</td><td data-ko="결혼식·돌잔치 답례품의 최소 구성 기준을 고시한다." data-en="Publishes the minimum standard for wedding and first-birthday return gifts.">결혼식·돌잔치 답례품의 최소 구성 기준을 고시한다.</td></tr>
+        <tr><td data-ko="포장재 재사용 점검" data-en="Wrapping Reuse Inspection">포장재 재사용 점검</td><td data-ko="선물 포장지 및 쇼핑백의 재활용 실태를 조사한다." data-en="Investigates the recycling rate of gift wrap and shopping bags.">선물 포장지 및 쇼핑백의 재활용 실태를 조사한다.</td></tr>
+        <tr><td data-ko="금기 선물 관리" data-en="Taboo Gift Management">금기 선물 관리</td><td data-ko="지역·상황별 금기 선물 목록을 데이터베이스로 유지·관리한다." data-en="Maintains a database of taboo gifts by region and situation.">지역·상황별 금기 선물 목록을 데이터베이스로 유지·관리한다.</td></tr>
+      </tbody>
+    </table>
+  </section>
 
-    <div class="status-grid">
-      <div class="kpi"><div class="num" id="statTotal">—</div><div class="lbl">누적 모의 대국 수</div></div>
-      <div class="kpi"><div class="num" id="statDraw">—</div><div class="lbl">무효(비김) 비율</div></div>
-      <div class="kpi"><div class="num" id="statCommitteeWin">—</div><div class="lbl">위원회 승률</div></div>
-      <div class="kpi"><div class="num" id="statAppeal">—</div><div class="lbl">이의신청 접수 (전원 기각)</div></div>
+  <section id="org">
+    <div class="kicker">ORGANIZATION</div>
+    <h2 data-ko="조직도" data-en="Organization Chart">조직도</h2>
+    <div class="orgchart">
+      <div class="org-box top" data-ko="위원장" data-en="Chair">위원장</div>
+      <div class="connector"></div>
+      <div class="org-box" data-ko="부위원장" data-en="Vice Chair">부위원장</div>
+      <div class="connector"></div>
+      <div class="org-branch">
+        <div class="org-box" data-ko="선물심사과" data-en="Gift Review Division">선물심사과</div>
+        <div class="org-box" data-ko="포장규격과" data-en="Packaging Standards Division">포장규격과</div>
+        <div class="org-box" data-ko="답례품관리과" data-en="Return-Gift Management Division">답례품관리과</div>
+        <div class="org-box" data-ko="마니또운영팀" data-en="Secret Santa Operations Team">마니또운영팀</div>
+      </div>
     </div>
+  </section>
 
-    <div class="bar-block">
-      <h3>손모양별 제출 비율 (전체 참가자 기준)</h3>
-      <div class="bar-row">
-        <div class="name">가위</div>
-        <div class="bar-track"><div class="bar-fill" id="barScissors" style="width:0%"></div></div>
-        <div class="pct" id="pctScissors">—</div>
-      </div>
-      <div class="bar-row">
-        <div class="name">바위</div>
-        <div class="bar-track"><div class="bar-fill" id="barRock" style="width:0%"></div></div>
-        <div class="pct" id="pctRock">—</div>
-      </div>
-      <div class="bar-row">
-        <div class="name">보</div>
-        <div class="bar-track"><div class="bar-fill" id="barPaper" style="width:0%"></div></div>
-        <div class="pct" id="pctPaper">—</div>
-      </div>
+  <section id="board">
+    <div class="kicker">NOTICE</div>
+    <div class="board-head">
+      <h2 data-ko="고시·공고" data-en="Notices">고시·공고</h2>
     </div>
+    <table class="board" id="boardTable">
+      <thead>
+        <tr><th data-ko="번호" data-en="No.">번호</th><th data-ko="제목" data-en="Title">제목</th><th data-ko="등록일" data-en="Date">등록일</th></tr>
+      </thead>
+      <tbody id="boardBody"></tbody>
+    </table>
+  </section>
 
-    <div class="bar-block">
-      <h3>최근 대국 기록</h3>
-      <table class="appeal">
-        <thead>
-          <tr><th>시각</th><th>귀하</th><th>위원회</th><th>결과</th></tr>
-        </thead>
-        <tbody id="recentGamesBody">
-          <tr><td colspan="4" style="color:var(--gray);">불러오는 중…</td></tr>
-        </tbody>
-      </table>
+  <section id="contact">
+    <div class="kicker">LOCATION</div>
+    <h2 data-ko="오시는 길" data-en="Location">오시는 길</h2>
+    <div class="contact">
+      <div class="mapbox" data-ko="지도는 마음속에 있습니다" data-en="The map lives in your heart">지도는 마음속에 있습니다</div>
+      <dl>
+        <div class="row"><dt data-ko="주소" data-en="Address">주소</dt><dd data-ko="선물특별시 마음구 정성로 100 (진심동)" data-en="100 Sincerity-ro, Maeum-gu, Gift Special City (Jinsim-dong)">선물특별시 마음구 정성로 100 (진심동)</dd></div>
+        <div class="row"><dt data-ko="대표전화" data-en="Main Phone">대표전화</dt><dd data-ko="1522-0000 (가상의 번호입니다)" data-en="1522-0000 (a fictional number)">1522-0000 (가상의 번호입니다)</dd></div>
+        <div class="row"><dt data-ko="팩스" data-en="Fax">팩스</dt><dd>02-000-0000</dd></div>
+        <div class="row"><dt data-ko="운영시간" data-en="Hours">운영시간</dt><dd data-ko="연중무휴, 마음이 있을 때" data-en="Open year-round, whenever the heart is in it">연중무휴, 마음이 있을 때</dd></div>
+      </dl>
     </div>
   </section>
 
 </main>
 
-<footer>
-  <div class="wrap">
-    가위바위보 심의위원회 · 본 사이트는 패러디 목적의 웹페이지입니다.<br>
-    가위바위보 규정 및 심의판례는 실제 효력이 없습니다.<br>
-    <span style="opacity:.6; font-size:.8em;">v1.3.0</span>
+<footer><div class="wrap">
+  <div class="fname" data-ko="중앙선물위원회" data-en="Central Gift Committee">중앙선물위원회</div>
+  <p data-ko="선물특별시 마음구 정성로 100 (진심동) · 대표전화 1522-0000" data-en="100 Sincerity-ro, Maeum-gu, Gift Special City (Jinsim-dong) · Main 1522-0000">선물특별시 마음구 정성로 100 (진심동) · 대표전화 1522-0000</p>
+  <p>Copyright ⓒ Central Gift Committee. All rights reserved.</p>
+  <div class="disclaimer" data-ko="본 사이트는 재미로 제작된 가상의 기관 웹사이트이며, 실제 정부기관과 무관합니다." data-en="This website is a fictional parody created for fun and is not affiliated with any real government agency.">
+    본 사이트는 재미로 제작된 가상의 기관 웹사이트이며, 실제 정부기관과 무관합니다.
   </div>
-</footer>
+</div></footer>
 
-<script defer>
-  const cases = [
-    {
-      no:"위심 2026-020호",
-      title:"심판 없는 대국의 결과 인정 여부 사건",
-      result:"deny",
-      resultLabel:"기각",
-      summary:"신청인은 목격자나 심판 없이 당사자끼리만 진행한 대국이었으므로 결과를 인정할 수 없다고 주장하였다.",
-      order:"이의신청을 기각한다.",
-      reason:"이 규정은 대국의 성립 요건으로 제3자 심판의 입회를 요구하고 있지 아니하며, 당사자 간 합의에 따라 자율적으로 진행된 대국도 유효하다. 사후에 결과가 불리하다는 사정만으로 무효를 주장할 수는 없다."
-    },
-    {
-      no:"위심 2026-018호",
-      title:"양손 동시 제출(가위·보 혼합) 무효 사건",
-      result:"grant",
-      resultLabel:"인용",
-      summary:"신청인은 상대방이 대국 중 손모양을 명확히 하지 않고 가위와 보의 중간 형태로 애매하게 제출하였다고 주장하였다.",
-      order:"이의신청을 인용하며, 해당 대국을 무효로 하고 재대국을 명한다.",
-      reason:"제2조는 가위·바위·보 각각의 손모양을 명확히 정의하고 있으며, 어느 손모양에도 해당하지 않는 애매한 형태의 제출은 유효한 의사표시로 볼 수 없다. 판정의 명확성을 위해 무효로 하고 재대국함이 타당하다."
-    },
-    {
-      no:"위심 2026-016호",
-      title:"손모양 사전 예고(선언 후 대국) 관련 이의 사건",
-      result:"dismiss",
-      resultLabel:"각하",
-      summary:"신청인은 상대방이 대국 전 '나는 항상 바위를 낸다'고 말한 뒤 실제로 가위를 내어 기만행위라고 주장하였다.",
-      order:"이의신청을 각하한다.",
-      reason:"대국 전의 발언은 심리전의 일종으로 통상적으로 허용되는 범위에 속하며, 규정상 사전 발언과 실제 제출 손모양의 일치 의무를 정하고 있지 아니하다. 이는 심의 대상이 되는 규정 위반에 해당하지 아니하여 각하한다."
-    },
-    {
-      no:"위심 2026-014호",
-      title:"동시성 논란: 0.1초 후출 판정 사건",
-      result:"deny",
-      resultLabel:"기각",
-      summary:"신청인은 상대방이 자신의 손모양을 확인한 후 손모양을 제출하였다고 주장하며 원판정에 불복하였다.",
-      order:"이의신청을 기각한다.",
-      reason:"영상 판독 결과 양 당사자의 손모양 제출 시각 차이는 0.08초로, 이는 육안 식별이 불가능한 수준이며 제4조가 예정한 '후출'에 해당한다고 보기 어렵다. 따라서 원판정을 유지한다."
-    },
-    {
-      no:"위심 2026-013호",
-      title:"무효 재대국 중 리듬 흐트림 이의 사건",
-      result:"grant",
-      resultLabel:"인용",
-      summary:"무효 처리 후 재대국 과정에서 상대방이 구호의 박자를 임의로 늦추어 심리적 이점을 취하였다는 이의가 제기되었다.",
-      order:"이의신청을 인용하며, 해당 대국을 무효로 하고 재대국을 명한다.",
-      reason:"제출된 영상에서 상대방이 '보'를 외치는 시점을 평소 대비 0.4초 지연시킨 정황이 확인되며, 이는 제6조제1호의 고의적 제출 지연에 해당한다. 공정한 승부를 위해 재대국이 필요하다."
-    },
-    {
-      no:"위심 2026-011호",
-      title:"보로 위장한 반가위 손모양 인정 여부",
-      result:"dismiss",
-      resultLabel:"각하",
-      summary:"신청인은 상대방의 손모양이 '보'가 아닌 손가락을 완전히 펴지 않은 변칙 손모양이라며 무효를 주장하였다.",
-      order:"이의신청을 각하한다.",
-      reason:"신청인은 이의신청서에 구체적인 손모양 사진 또는 영상을 첨부하지 아니하여 심의에 필요한 사실관계 확인이 불가능하다. 이는 심의 요건을 갖추지 못한 것으로 각하함이 타당하다."
-    },
-    {
-      no:"위심 2026-009호",
-      title:"온라인 화상통화 가위바위보 프레임 지연 사건",
-      result:"grant",
-      resultLabel:"인용",
-      summary:"화상통화를 통한 대국에서 네트워크 지연으로 인해 한쪽 화면에 상대방의 손모양이 먼저 노출되었다는 이의가 제기되었다.",
-      order:"이의신청을 인용하며, 해당 대국을 무효로 한다.",
-      reason:"화상통화 방식의 대국은 통신 지연에 따라 사실상 동시성이 담보되지 않을 위험이 있음이 인정된다. 고의성이 없더라도 결과의 공정성을 담보할 수 없으므로 무효로 함이 타당하다. 향후 온라인 대국에는 별도의 카운트다운 규정을 마련할 필요가 있다."
-    },
-    {
-      no:"위심 2026-007호",
-      title:"3인 가위바위보 동률 처리 방식 이의 사건",
-      result:"deny",
-      resultLabel:"기각",
-      summary:"3인 대국에서 두 명이 승자로 남고 한 명이 탈락하는 방식에 대해, 탈락 기준이 불명확하다는 이의가 제기되었다.",
-      order:"이의신청을 기각한다.",
-      reason:"제3조는 2인 대국을 기본으로 하되, 3인 이상의 경우 서로 다른 두 손모양이 제출된 진영이 승리하고 나머지 진영이 탈락하는 것을 통상의 관례로 인정하고 있다. 절차상 하자가 없어 원판정을 유지한다."
-    },
-    {
-      no:"위심 2026-004호",
-      title:"판정 직후 번복(무르기) 허용 여부 사건",
-      result:"deny",
-      resultLabel:"기각",
-      summary:"신청인은 판정 직후 '한 번만 다시 하자'며 재대국을 요구하였으나 상대방이 이를 거부한 데 대해 이의를 제기하였다.",
-      order:"이의신청을 기각한다.",
-      reason:"판정은 제3조에 따라 손모양이 동시에 제출된 시점에 확정되며, 사후 합의 없는 일방의 번복 요구는 인정되지 않는다. 무르기는 상호 합의가 있는 경우에 한하여 허용되는 관행일 뿐 권리가 아니다."
-    },
-    {
-      no:"위심 2026-002호",
-      title:"구호 생략(묵음 대국) 무효 확인의 건",
-      result:"grant",
-      resultLabel:"인용",
-      summary:"신청인은 상대방이 '가위바위보'라는 정식 구호 없이 손짓만으로 대국을 진행하여 절차상 하자가 있다고 주장하였다.",
-      order:"이의신청을 인용하며, 해당 대국을 무효로 하고 재대국을 명한다.",
-      reason:"제4조는 정해진 구호에 맞추어 동시에 손모양을 제출할 것을 요구하고 있으며, 구호는 단순한 관용구가 아니라 동시성을 담보하는 절차적 장치에 해당한다. 구호 없이 진행된 대국은 동시성 판단이 곤란하므로 무효로 함이 타당하다."
-    }
+<script>
+(function(){
+  // ============================================================
+  // 새 공고를 추가/수정하려면 아래 notices 배열을 직접 편집한 뒤
+  // commit.bat 을 실행해서 GitHub에 올리세요.
+  // (방문자 브라우저에서는 수정할 수 없고, 이 배열이 모두에게 보이는
+  //  유일한 데이터입니다.)
+  // ============================================================
+  var notices = [
+    {id:1, date:'2026-09-02',
+     title:'추석 선물세트 표준가격 고시',
+     content:'중앙선물위원회는 2026년도 추석을 맞아 선물세트 표준가격을 아래와 같이 고시한다.\n\n1. 정성 등급: 3만원 이하\n2. 성의 등급: 3만원 초과 ~ 7만원 이하\n3. 과잉 등급: 7만원 초과 (사유서 제출 권고)\n\n본 고시는 공고일로부터 시행하며, 마음이 가격을 초과하는 경우에 대하여는 별도 심의를 거치지 아니한다.',
+     title_en:'Chuseok Gift Set Standard Price Notice',
+     content_en:'On the occasion of Chuseok 2026, the Central Gift Committee hereby announces the standard prices for gift sets as follows.\n\n1. Sincerity Grade: ₩30,000 or less\n2. Thoughtfulness Grade: over ₩30,000 up to ₩70,000\n3. Excess Grade: over ₩70,000 (a written explanation is recommended)\n\nThis notice takes effect from the date of announcement. Cases where sincerity exceeds price are not subject to separate review.'},
+    {id:2, date:'2026-08-14',
+     title:'국화빵 답례품 인정 여부에 관한 유권해석',
+     content:'민원인 문의에 대하여 다음과 같이 회신한다.\n\n국화빵은 그 형태와 정성이 답례품 표준 지침 제3조가 정하는 "소박하되 진심이 담긴 간식류"에 해당하므로 답례품으로 인정함이 타당하다. 다만 붕어빵과 혼합 구성 시에는 각각을 개별 품목으로 산정한다.',
+     title_en:'Authoritative Interpretation on Chrysanthemum Bread as a Return Gift',
+     content_en:'In response to a citizen inquiry, the committee replies as follows.\n\nChrysanthemum-shaped bread, given its form and the sincerity it embodies, qualifies as a "modest yet heartfelt snack" under Article 3 of the Return-Gift Standards, and is therefore recognized as an appropriate return gift. However, when combined with fish-shaped bread, each shall be counted as a separate item.'},
+    {id:3, date:'2026-07-21',
+     title:'여름 휴가철 선물 자제 권고문',
+     content:'무더운 여름철 휴가지에서의 즉흥적 선물 구매가 증가함에 따라, 위원회는 다음 사항을 권고한다.\n\n- 기념품 가게 앞에서 3분 이상 숙고할 것\n- "이거 예쁘다" 발언 이후에는 반드시 재고할 것\n- 냉장 보관이 필요한 선물은 지양할 것\n\n권고문은 강제력이 없으나, 지키면 어쩐지 뿌듯하다.',
+     title_en:'Recommendation on Restraint in Summer Vacation Gift Purchases',
+     content_en:'As impulsive gift purchases at vacation destinations increase during the hot summer season, the committee recommends the following.\n\n- Pause and reflect for at least three minutes in front of a souvenir shop\n- Always reconsider after saying "this is pretty"\n- Avoid gifts that require refrigeration\n\nThis recommendation is not legally binding, but following it feels oddly satisfying.'},
+    {id:4, date:'2026-05-04',
+     title:'어린이날 선물 상한액 조정 고시',
+     content:'물가 상승을 반영하여 어린이날 선물 상한액을 전년 대비 소폭 상향 조정한다.\n\n조정 전: 5만원 / 조정 후: 5만 5천원\n\n다만 조부모가 지급하는 용돈은 본 고시의 적용 대상에서 제외한다.',
+     title_en:"Adjustment of the Children's Day Gift Cap",
+     content_en:"Reflecting inflation, the Children's Day gift cap has been raised slightly from the previous year.\n\nPrevious: ₩50,000 / New: ₩55,000\n\nHowever, pocket money given by grandparents is excluded from this notice."},
+    {id:5, date:'2026-02-10',
+     title:'발렌타인데이 초콜릿 의무 표시사항 개정',
+     content:'초콜릿 포장에 다음 사항을 의무적으로 표시하도록 개정한다.\n\n1. 원산지\n2. 카카오 함량\n3. "직접 만든 것인지 여부"\n\n제3호 표시를 누락하는 경우 진정성에 대한 의구심이 제기될 수 있음을 유의한다.',
+     title_en:"Revision of Mandatory Labeling for Valentine's Day Chocolate",
+     content_en:"Chocolate packaging is hereby revised to require the following mandatory labels.\n\n1. Country of origin\n2. Cacao content\n3. Whether it was handmade\n\nPlease note that omitting item 3 may raise questions about the sincerity of the gift."}
   ];
 
-  const listEl = document.getElementById('caseList');
-  cases.forEach((c,i)=>{
-    const item = document.createElement('div');
-    item.className = 'case-item';
-    item.innerHTML = `
-      <button class="case-head" data-idx="${i}">
-        <span class="case-no">${c.no}</span>
-        <span class="case-title">${c.title}</span>
-        <span class="badge ${c.result}">${c.resultLabel}</span>
-        <span class="case-arrow">▶</span>
-      </button>
-      <div class="case-body">
-        <div class="row"><b>사건개요</b>${c.summary}</div>
-        <div class="row"><b>주문</b>${c.order}</div>
-        <div class="row"><b>이유</b>${c.reason}</div>
-      </div>
-    `;
-    listEl.appendChild(item);
-  });
+  var expandedId = null;
+  var focusId = null;
 
-  listEl.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.case-head');
-    if(!btn) return;
-    btn.closest('.case-item').classList.toggle('open');
-  });
-
-  // 모의 대국
-  const beats = {"가위":"보", "바위":"가위", "보":"바위"};
-  const emojiMap = {"가위":"✌️", "바위":"✊", "보":"✋"};
-  let score = {win:0, lose:0, draw:0};
-  let caseSeq = 21;
-  let lastGameId = null;
-  const appealReasons = [
-    "판정 당시 영상 판독 결과 후출 또는 절차 위반이 발견되지 아니하여 이의신청을 기각한다.",
-    "귀하가 제출한 손모양은 규정 제3조가 정한 승패 기준에 정확히 부합하는바, 이의신청을 기각한다.",
-    "이의신청서에 구체적인 위법 사유가 소명되지 아니하여 기각한다.",
-    "위원회는 전원일치로 원판정에 하자가 없다고 의결하였다."
-  ];
-
-  let isPlaying = false;
-  function setPickBtnsDisabled(disabled){
-    document.querySelectorAll('.pick-btn').forEach(b => b.disabled = disabled);
-  }
-  function judge(userPick, committeePick){
-    if(userPick === committeePick) return 'draw';
-    if(beats[userPick] === committeePick) return 'win';
-    return 'lose';
+  function currentLang(){
+    return document.documentElement.lang === 'en' ? 'en' : 'ko';
   }
 
-  function renderVerdict(userPick, committeePick, result){
-    let badgeClass, badgeLabel, order;
-    if(result === 'draw'){
-      badgeClass='dismiss'; badgeLabel='무효';
-      order = '양측이 동일한 손모양을 제출하여 대국을 무효로 하며, 재대국을 명한다.';
-      score.draw++;
-    } else if(result === 'win'){
-      badgeClass='grant'; badgeLabel='승리';
-      order = '귀하의 승리를 인정하며, 위원회 제출 손모양의 이의는 없음을 확인한다.';
-      score.win++;
-    } else {
-      badgeClass='deny'; badgeLabel='패배';
-      order = '귀하의 패배를 확정하며, 필요 시 이의신청을 제기할 수 있다.';
-      score.lose++;
-    }
-    document.getElementById('scoreWin').textContent = score.win;
-    document.getElementById('scoreLose').textContent = score.lose;
-    document.getElementById('scoreDraw').textContent = score.draw;
-
-    document.getElementById('verdictNo').textContent = `즉심 2026-${String(caseSeq++).padStart(3,'0')}호`;
-    const badgeEl = document.getElementById('verdictBadge');
-    badgeEl.className = 'badge ' + badgeClass;
-    badgeEl.textContent = badgeLabel;
-    document.getElementById('verdictCommittee').textContent = `${emojiMap[committeePick]} ${committeePick}`;
-    document.getElementById('verdictUser').textContent = `${emojiMap[userPick]} ${userPick}`;
-    document.getElementById('verdictOrder').textContent = order;
-
-    const appealBtn = document.getElementById('appealBtn');
-    const appealResult = document.getElementById('appealResult');
-    appealResult.classList.remove('show');
-    appealResult.textContent = '';
-    appealBtn.disabled = (result !== 'lose');
-    appealBtn.textContent = '이의신청 제기';
-
-    document.getElementById('verdictBox').style.display = 'block';
+  function formatDate(iso){
+    if(!iso) return '';
+    return iso.split('-').join('.');
   }
 
-  async function playGame(userPick){
-    if(isPlaying) return; // 요청 진행 중 중복 클릭/연타 방지 (타이머 대신 실제 진행 상태로 판단)
-    isPlaying = true;
-    setPickBtnsDisabled(true);
-    lastGameId = null;
+  function sortNotices(){
+    notices.sort(function(a,b){
+      if(a.date < b.date) return 1;
+      if(a.date > b.date) return -1;
+      return 0;
+    });
+  }
 
-    if(supabaseReady){
-      // 위원회 패 추첨과 승패 판정은 서버(Postgres 함수) 안에서만 일어난다.
-      // 클라이언트는 자기가 낸 손모양만 보낼 수 있고, 결과를 조작해서 보낼 수 없다.
-      try{
-        const { data, error } = await sb.rpc('play_and_record', { p_user_pick: userPick });
-        if(error || !data){
-          console.error('play_and_record error:', error);
-          document.getElementById('verdictOrder').textContent = '위원회 서버와 통신에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-          document.getElementById('verdictBox').style.display = 'block';
-          return;
+  function render(){
+    sortNotices();
+    var lang = currentLang();
+    var body = document.getElementById('boardBody');
+    body.innerHTML = '';
+    var total = notices.length;
+    notices.forEach(function(n, i){
+      var tr = document.createElement('tr');
+      tr.className = 'board-main';
+      var num = total - i;
+
+      var tdNum = document.createElement('td');
+      tdNum.className = 'num';
+      tdNum.textContent = num;
+      tr.appendChild(tdNum);
+
+      var tdTitle = document.createElement('td');
+      tdTitle.className = 'title';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'title-btn';
+      btn.setAttribute('data-id', n.id);
+      btn.setAttribute('aria-expanded', expandedId === n.id ? 'true' : 'false');
+      btn.setAttribute('aria-controls', 'notice-detail-' + n.id);
+      var toggle = document.createElement('span');
+      toggle.className = 'title-toggle' + (expandedId === n.id ? ' open' : '');
+      toggle.setAttribute('aria-hidden', 'true');
+      toggle.textContent = '▸';
+      btn.appendChild(toggle);
+      btn.appendChild(document.createTextNode(lang === 'en' ? n.title_en : n.title));
+      tdTitle.appendChild(btn);
+      tr.appendChild(tdTitle);
+
+      var tdDate = document.createElement('td');
+      tdDate.className = 'date';
+      tdDate.textContent = formatDate(n.date);
+      tr.appendChild(tdDate);
+
+      tr.addEventListener('click', function(e){
+        if(e.detail === 0){ focusId = n.id; } // 키보드로 연 경우 포커스 유지
+        expandedId = (expandedId === n.id) ? null : n.id;
+        render();
+      });
+
+      body.appendChild(tr);
+
+      if(expandedId === n.id){
+        var trDetail = document.createElement('tr');
+        trDetail.className = 'board-detail-row';
+        var tdDetail = document.createElement('td');
+        tdDetail.colSpan = 3;
+        var detail = document.createElement('div');
+        detail.id = 'notice-detail-' + n.id;
+        var content = lang === 'en' ? n.content_en : n.content;
+        if(content && content.trim()){
+          detail.className = 'board-detail';
+          detail.textContent = content;
+        } else {
+          detail.className = 'board-detail board-detail-empty';
+          detail.textContent = lang === 'en' ? 'No detailed content has been registered.' : '등록된 상세 내용이 없습니다.';
         }
-        lastGameId = data.id;
-        renderVerdict(data.user_pick, data.committee_pick, data.result);
-        // 매번 정리하면 대국마다 추가 요청이 붙으므로, 몇 판에 한 번만 정리
-        trimCounter = (trimCounter + 1) % TRIM_EVERY_N_PLAYS;
-        if(trimCounter === 0) trimOldGameResults();
-      } finally {
-        isPlaying = false;
-        setPickBtnsDisabled(false);
+        tdDetail.appendChild(detail);
+        trDetail.appendChild(tdDetail);
+        body.appendChild(trDetail);
       }
-    } else {
-      // Supabase 미설정 시에는 기록 없이 로컬에서만 판정 (데모용 폴백)
-      const committeePick = ["가위","바위","보"][Math.floor(Math.random()*3)];
-      renderVerdict(userPick, committeePick, judge(userPick, committeePick));
-      isPlaying = false;
-      setPickBtnsDisabled(false);
-    }
-  }
-
-  // 대국 기록이 10건을 넘으면 가장 오래된 기록부터 삭제 (매 대국마다 아닌, N판마다 한 번씩)
-  const MAX_GAME_RECORDS = 10;
-  const TRIM_EVERY_N_PLAYS = 3;
-  let trimCounter = 0;
-  async function trimOldGameResults(){
-    try{
-      // count와 id 목록을 한 번의 요청으로 같이 받아 왕복 횟수를 줄임
-      const { data: rows, count, error } = await sb
-        .from('game_results')
-        .select('id', { count:'exact' })
-        .order('created_at', { ascending:true });
-      if(error || !count || count <= MAX_GAME_RECORDS || !rows) return;
-
-      const overflow = count - MAX_GAME_RECORDS;
-      const oldestIds = rows.slice(0, overflow).map(r => r.id);
-      if(oldestIds.length === 0) return;
-
-      await sb.from('game_results').delete().in('id', oldestIds);
-    } catch(e){
-      console.error('trimOldGameResults error:', e);
-    }
-  }
-
-  document.querySelectorAll('.pick-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> playGame(btn.dataset.pick));
-  });
-
-  document.getElementById('appealBtn').addEventListener('click', async (e)=>{
-    const reason = appealReasons[Math.floor(Math.random()*appealReasons.length)];
-    const resultEl = document.getElementById('appealResult');
-    resultEl.textContent = '이의신청 심의 결과: 기각. ' + reason;
-    resultEl.classList.add('show');
-    e.target.disabled = true;
-    e.target.textContent = '심의 완료';
-    if(supabaseReady && lastGameId){
-      await Promise.all([
-        sb.from('game_results').update({ appealed: true }).eq('id', lastGameId),
-        sb.rpc('record_appeal').then(({error}) => { if(error) console.error('record_appeal error:', error); })
-      ]);
-    }
-  });
-
-  // ===== 승부 현황 (실데이터 집계) =====
-  async function loadStats(){
-    const subEl = document.getElementById('statusSub');
-    if(!supabaseReady){
-      subEl.textContent = "Supabase 설정이 필요합니다 (관리자 안내 참고)";
-      return;
-    }
-    subEl.textContent = "위원회 설립 이후 누적된 실제 기록을 집계합니다.";
-
-    // 최근 10건만 남기고 정리되는 game_results가 아니라,
-    // 절대 줄어들지 않는 누적 카운터(game_counters)에서 집계값을 읽어온다.
-    const { data: counters, error: counterErr } = await sb
-      .from('game_counters')
-      .select('total_games,win_count,lose_count,draw_count,appeal_count,scissors_count,rock_count,paper_count')
-      .eq('id', 1)
-      .single();
-
-    if(counterErr || !counters){
-      subEl.textContent = "누적 통계를 불러오지 못했습니다 (game_counters 테이블/RPC 설정을 확인해 주세요).";
-    }
-
-    const t = (counters && counters.total_games) || 0;
-    const drawCount = (counters && counters.draw_count) || 0;
-    const loseCount = (counters && counters.lose_count) || 0;
-    const appealCount = (counters && counters.appeal_count) || 0;
-
-    document.getElementById('statTotal').textContent = t.toLocaleString('ko-KR') + '건';
-    document.getElementById('statDraw').textContent = t ? ((drawCount/t)*100).toFixed(1) + '%' : '0%';
-    document.getElementById('statCommitteeWin').textContent = t ? ((loseCount/t)*100).toFixed(1) + '%' : '0%';
-    document.getElementById('statAppeal').textContent = appealCount.toLocaleString('ko-KR') + '건';
-
-    if(t > 0){
-      const sCount = counters.scissors_count || 0;
-      const rCount = counters.rock_count || 0;
-      const pCount = counters.paper_count || 0;
-      const setBar = (barId, pctId, n) => {
-        const pct = (n / t) * 100;
-        document.getElementById(barId).style.width = pct + '%';
-        document.getElementById(pctId).textContent = pct.toFixed(1) + '%';
-      };
-      setBar('barScissors','pctScissors', sCount);
-      setBar('barRock','pctRock', rCount);
-      setBar('barPaper','pctPaper', pCount);
-    } else {
-      ['barScissors','barRock','barPaper'].forEach(id => document.getElementById(id).style.width = '0%');
-      ['pctScissors','pctRock','pctPaper'].forEach(id => document.getElementById(id).textContent = '0%');
-    }
-
-    const recentBody = document.getElementById('recentGamesBody');
-    const { data: recent, error: recentErr } = await sb
-      .from('game_results')
-      .select('created_at,user_pick,committee_pick,result')
-      .order('created_at', { ascending:false })
-      .limit(10);
-    if(recentErr || !recent || recent.length === 0){
-      recentBody.innerHTML = `<tr><td colspan="4" style="color:var(--gray);">아직 기록된 대국이 없습니다.</td></tr>`;
-    } else {
-      const resultLabel = { win:'승리', lose:'패배', draw:'무효' };
-      recentBody.innerHTML = recent.map(r => `
-        <tr>
-          <td>${new Date(r.created_at).toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
-          <td>${emojiMap[r.user_pick] || ''} ${r.user_pick}</td>
-          <td>${emojiMap[r.committee_pick] || ''} ${r.committee_pick}</td>
-          <td>${resultLabel[r.result] || r.result}</td>
-        </tr>
-      `).join('');
-    }
-  }
-
-  // ===== 위원 가입 (Supabase) =====
-  // 아래 두 값을 Supabase 프로젝트의 Project URL / anon public(publishable) key로 교체하세요.
-  const SUPABASE_URL = "https://jcdxkuierrzubkidcpdj.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_NFU4D2Y0gXZthdtk2F3UYA_hVZqApc3";
-  const supabaseConfigured = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
-  const supabaseLibLoaded = !!(window.supabase && typeof window.supabase.createClient === 'function');
-  const supabaseReady = supabaseConfigured && supabaseLibLoaded;
-  const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  if(supabaseConfigured && !supabaseLibLoaded){
-    console.warn('[위원 가입/현황] Supabase 라이브러리(supabase.min.js)를 불러오지 못했습니다. index.html과 같은 폴더에 supabase.min.js 파일이 있는지 확인하세요.');
-  }
-  let isChair = false;
-  let membersPublic = true;
-  const CHAIR_DISPLAY_NAME = "위원장";
-
-  async function loadSettings(){
-    if(!supabaseReady) return;
-    const { data, error } = await sb.from('site_settings').select('members_public').eq('id', 1).single();
-    if(!error && data){ membersPublic = data.members_public; }
-  }
-
-  async function loadMembers(){
-    const countEl = document.getElementById('memberCount');
-    const bodyEl = document.getElementById('memberTableBody');
-    const thAction = document.getElementById('thAction');
-    const tableEl = document.getElementById('membersTable');
-    const noticeEl = document.getElementById('membersPrivateNotice');
-    thAction.style.display = isChair ? '' : 'none';
-
-    if(!supabaseReady){
-      countEl.textContent = "Supabase 설정이 필요합니다 (관리자 안내 참고)";
-      bodyEl.innerHTML = '';
-      return;
-    }
-
-    await loadSettings();
-
-    const toggleEl = document.getElementById('visibilityToggle');
-    const toggleLbl = document.getElementById('visibilityLabel');
-    if(isChair && toggleEl){
-      toggleEl.checked = membersPublic;
-      toggleLbl.textContent = membersPublic ? "위원 명부 공개 중" : "위원 명부 비공개 중";
-    }
-
-    if(!isChair && !membersPublic){
-      tableEl.style.display = 'none';
-      noticeEl.style.display = 'block';
-      document.getElementById('sortBar').style.display = 'none';
-      countEl.textContent = "명부가 비공개 상태입니다.";
-      return;
-    }
-    tableEl.style.display = '';
-    noticeEl.style.display = 'none';
-    document.getElementById('sortBar').style.display = '';
-
-    countEl.textContent = "불러오는 중…";
-    const { data, error } = await sb
-      .from('members')
-      .select('member_no,name,hand,created_at')
-      .order('member_no', { ascending:false });
-    if(error){
-      countEl.textContent = "명부를 불러오지 못했습니다 (" + error.message + ")";
-      return;
-    }
-    countEl.textContent = `현재 위촉된 위원: 총 ${data.length}명` + (isChair && !membersPublic ? " (비공개 상태 - 위원장에게만 보임)" : "");
-    lastMembersData = data;
-    renderMemberRows();
-  }
-
-  const handOrder = { "가위":0, "바위":1, "보":2 };
-  let lastMembersData = [];
-
-  function sortMembers(data, mode){
-    const arr = data.slice();
-    switch(mode){
-      case 'oldest':
-        arr.sort((a,b)=> a.member_no - b.member_no); break;
-      case 'name':
-        arr.sort((a,b)=> a.name.localeCompare(b.name, 'ko')); break;
-      case 'hand':
-        arr.sort((a,b)=> (handOrder[a.hand] ?? 9) - (handOrder[b.hand] ?? 9) || a.member_no - b.member_no); break;
-      default: // recent
-        arr.sort((a,b)=> b.member_no - a.member_no);
-    }
-    return arr;
-  }
-
-  function renderMemberRows(){
-    const bodyEl = document.getElementById('memberTableBody');
-    const mode = document.getElementById('memberSort').value;
-    const data = sortMembers(lastMembersData, mode);
-    const chairRow = `
-      <tr class="chair-row">
-        <td><span class="chair-no-badge">위원장</span></td>
-        <td>${CHAIR_DISPLAY_NAME}</td>
-        <td class="hand">—</td>
-        <td>—</td>
-        ${isChair ? `<td></td>` : ''}
-      </tr>
-    `;
-    bodyEl.innerHTML = chairRow + data.map(m => `
-      <tr>
-        <td>제${String(m.member_no).padStart(4,'0')}호</td>
-        <td>${escapeHtml(m.name)}</td>
-        <td class="hand">${emojiMap[m.hand] || ''} ${m.hand}</td>
-        <td>${new Date(m.created_at).toLocaleDateString('ko-KR')}</td>
-        ${isChair ? `<td><button class="expel-btn" data-no="${m.member_no}" data-name="${escapeHtml(m.name)}">강제 탈퇴</button></td>` : ''}
-      </tr>
-    `).join('');
-  }
-
-  document.getElementById('memberSort').addEventListener('change', renderMemberRows);
-
-  document.getElementById('visibilityToggle').addEventListener('change', async (e)=>{
-    const newVal = e.target.checked;
-    const { error } = await sb.from('site_settings').update({ members_public: newVal }).eq('id', 1);
-    if(error){
-      alert("설정 변경에 실패했습니다: " + error.message);
-      e.target.checked = !newVal;
-      return;
-    }
-    loadMembers();
-  });
-
-  async function expelMember(memberNo, name){
-    if(!confirm(`${name} 위원을 강제 탈퇴시키겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
-    const { error } = await sb.from('members').delete().eq('member_no', memberNo);
-    if(error){
-      alert("탈퇴 처리에 실패했습니다: " + error.message);
-      return;
-    }
-    loadMembers();
-  }
-
-  document.getElementById('memberTableBody').addEventListener('click', (e)=>{
-    const btn = e.target.closest('.expel-btn');
-    if(!btn) return;
-    expelMember(Number(btn.dataset.no), btn.dataset.name);
-  });
-
-  // ---- 위원장 로그인 ----
-  const chairToggleBtn = document.getElementById('chairToggleBtn');
-  const chairLoginForm = document.getElementById('chairLoginForm');
-  const chairLoggedOut = document.getElementById('chairLoggedOut');
-  const chairLoggedIn = document.getElementById('chairLoggedIn');
-
-  chairToggleBtn.addEventListener('click', ()=>{
-    chairLoginForm.style.display = chairLoginForm.style.display === 'none' ? 'flex' : 'none';
-  });
-
-  document.getElementById('chairLoginBtn').addEventListener('click', async ()=>{
-    const msgEl = document.getElementById('chairMsg');
-    if(!supabaseReady){ msgEl.textContent = supabaseConfigured ? "서버 연결 라이브러리를 불러오지 못했습니다. 새로고침 후 다시 시도해주세요." : "Supabase 설정이 필요합니다."; return; }
-    const email = document.getElementById('chairEmail').value.trim();
-    const pw = document.getElementById('chairPw').value;
-    msgEl.textContent = "";
-    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
-    if(error){
-      msgEl.textContent = "로그인 실패: " + error.message;
-      return;
-    }
-    document.getElementById('chairPw').value = '';
-  });
-
-  document.getElementById('chairLogoutBtn').addEventListener('click', async ()=>{
-    if(supabaseReady) await sb.auth.signOut();
-  });
-
-  if(supabaseReady){
-    sb.auth.onAuthStateChange((_event, session)=>{
-      isChair = !!session;
-      chairLoggedOut.style.display = isChair ? 'none' : 'flex';
-      chairLoggedIn.style.display = isChair ? 'flex' : 'none';
-      if(chairLoginForm) chairLoginForm.style.display = 'none';
-      loadMembers();
-      checkPauseRisk();
     });
+    if(focusId !== null){
+      var fb = body.querySelector('button[data-id="' + focusId + '"]');
+      if(fb){ fb.focus(); }
+      focusId = null;
+    }
   }
 
-  // ===== Supabase 자동 정지 사전 경고 (위원장 전용) =====
-  // 무료 플랜은 약 7일간 활동이 없으면 프로젝트가 정지됨 → 마지막 실제 기록(위원 가입/대국) 시각으로 남은 기간을 추정
-  const PAUSE_LIMIT_DAYS = 7;
-  const PAUSE_WARN_DAYS = 5;
-  async function checkPauseRisk(){
-    const el = document.getElementById('pauseWarn');
-    if(!el) return;
-    if(!isChair || !supabaseReady){ el.style.display = 'none'; return; }
-    try{
-      const [m, g] = await Promise.all([
-        sb.from('members').select('created_at').order('created_at', { ascending:false }).limit(1),
-        sb.from('game_results').select('created_at').order('created_at', { ascending:false }).limit(1)
-      ]);
-      const times = [m.data, g.data].flat().filter(Boolean).map(r => new Date(r.created_at).getTime());
-      if(!times.length){ el.style.display = 'none'; return; }
-      const idleDays = (Date.now() - Math.max(...times)) / 86400000;
-      const left = Math.ceil(PAUSE_LIMIT_DAYS - idleDays);
-      el.className = 'pause-warn';
-      if(idleDays >= PAUSE_LIMIT_DAYS){
-        el.classList.add('danger');
-        el.textContent = `⚠ 마지막 기록 후 ${Math.floor(idleDays)}일 경과 - Supabase 프로젝트가 이미 정지되었거나 곧 정지될 수 있습니다. 대시보드에서 Restore project 를 확인하세요.`;
-      } else if(idleDays >= PAUSE_WARN_DAYS){
-        el.classList.add('warn');
-        el.textContent = `⚠ 마지막 기록 후 ${Math.floor(idleDays)}일 경과 - 약 ${Math.max(left,1)}일 내 활동이 없으면 Supabase가 자동 정지됩니다.`;
-      } else {
-        el.textContent = `Supabase 상태 양호 - 마지막 기록 ${Math.floor(idleDays)}일 전 (정지 예정까지 약 ${left}일)`;
-      }
-      el.style.display = 'block';
-    } catch(e){ el.style.display = 'none'; }
-  }
-
-  function escapeHtml(str){
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-
-  const JOIN_COOLDOWN_MS = 30000;
-  let lastJoinAt = 0;
-  try{
-    // 새로고침해도 쿨다운이 풀리지 않도록 마지막 가입 시각을 로컬에 보관
-    lastJoinAt = Number(localStorage.getItem('rps_last_join_at')) || 0;
-  } catch(e){ /* localStorage 접근 불가 시 세션 내 쿨다운만 적용 */ }
-  document.getElementById('joinSubmit').addEventListener('click', async ()=>{
-    const nameEl = document.getElementById('joinName');
-    const handEl = document.getElementById('joinHand');
-    const reasonEl = document.getElementById('joinReason');
-    const msgEl = document.getElementById('joinMsg');
-    const btnEl = document.getElementById('joinSubmit');
-    const name = nameEl.value.trim();
-
-    const sinceLastJoin = Date.now() - lastJoinAt;
-    if(sinceLastJoin < JOIN_COOLDOWN_MS){
-      msgEl.textContent = `연속 가입 신청은 ${Math.ceil((JOIN_COOLDOWN_MS - sinceLastJoin)/1000)}초 후 다시 시도해 주세요.`;
-      msgEl.className = "join-msg error";
-      return;
-    }
-    if(!name){
-      msgEl.textContent = "성명을 입력해 주세요.";
-      msgEl.className = "join-msg error";
-      return;
-    }
-    if(!supabaseReady){
-      msgEl.textContent = "아직 Supabase 연동이 설정되지 않았습니다. 관리자에게 문의해 주세요.";
-      msgEl.className = "join-msg error";
-      return;
-    }
-
-    btnEl.disabled = true;
-    msgEl.textContent = "";
-    const hand = handEl.value;
-    const { data, error } = await sb
-      .from('members')
-      .insert({ name, hand, reason: reasonEl.value.trim() || null })
-      .select()
-      .single();
-    btnEl.disabled = false;
-
-    if(error){
-      msgEl.textContent = "가입 신청에 실패했습니다 (" + error.message + ")";
-      msgEl.className = "join-msg error";
-      return;
-    }
-
-    lastJoinAt = Date.now();
-    try{ localStorage.setItem('rps_last_join_at', String(lastJoinAt)); } catch(e){}
-    msgEl.textContent = "가입 신청이 완료되었습니다.";
-    msgEl.className = "join-msg ok";
-
-    document.getElementById('certNo').textContent = `위촉 제${String(data.member_no).padStart(4,'0')}호`;
-    document.getElementById('certName').textContent = data.name;
-    document.getElementById('certHand').textContent = `담당 손모양: ${emojiMap[data.hand] || ''} ${data.hand}`;
-    document.getElementById('certDate').textContent = new Date(data.created_at).toLocaleDateString('ko-KR') + ' 위촉';
-    document.getElementById('certificate').classList.add('show');
-
-    nameEl.value = '';
-    reasonEl.value = '';
-    loadMembers();
-  });
-
-  // tabs
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const panels = document.querySelectorAll('.panel');
-  tabBtns.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      tabBtns.forEach(b=>b.classList.remove('active'));
-      panels.forEach(p=>p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
-      if(btn.dataset.tab === 'join'){ loadMembers(); }
-      if(btn.dataset.tab === 'status'){ loadStats(); }
-      window.scrollTo({top:0, behavior:'smooth'});
-    });
-  });
+  window.renderBoard = render;
+  render();
+})();
 </script>
 
+<!-- ===== ENG/KOR 즉시 전환 (사전 번역, 새로고침·외부요청 없음, 선택 언어는 브라우저에 저장) ===== -->
+<script>
+(function(){
+  var KEY = 'cgc-lang';
+
+  function applyLang(lang){
+    document.documentElement.lang = lang;
+    document.title = (lang === 'en') ? 'Central Gift Committee' : '중앙선물위원회';
+    document.querySelectorAll('[data-ko]').forEach(function(el){
+      var val = el.getAttribute(lang === 'en' ? 'data-en' : 'data-ko');
+      if(val !== null){ el.innerHTML = val; }
+    });
+    document.querySelectorAll('[data-alt-ko]').forEach(function(el){
+      var alt = el.getAttribute(lang === 'en' ? 'data-alt-en' : 'data-alt-ko');
+      if(alt !== null){ el.setAttribute('alt', alt); }
+    });
+    var btn = document.getElementById('langToggle');
+    if(btn){
+      btn.textContent = (lang === 'en') ? 'KOR' : 'ENG';
+      btn.setAttribute('aria-label', (lang === 'en') ? '한국어로 보기' : 'View in English');
+    }
+    if(typeof window.renderBoard === 'function'){ window.renderBoard(); }
+  }
+
+  function saveLang(lang){
+    try{ localStorage.setItem(KEY, lang); }catch(e){}
+  }
+  function loadLang(){
+    try{ return localStorage.getItem(KEY); }catch(e){ return null; }
+  }
+
+  var btn = document.getElementById('langToggle');
+  btn.addEventListener('click', function(){
+    var next = (document.documentElement.lang === 'en') ? 'ko' : 'en';
+    applyLang(next);
+    saveLang(next);
+  });
+
+  if(loadLang() === 'en'){ applyLang('en'); }
+})();
+</script>
 </body>
 </html>
