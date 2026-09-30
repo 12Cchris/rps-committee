@@ -696,7 +696,7 @@
   <div class="wrap">
     가위바위보 심의위원회 · 본 사이트는 패러디 목적의 웹페이지입니다.<br>
     가위바위보 규정 및 심의판례는 실제 효력이 없습니다.<br>
-    <span style="opacity:.6; font-size:.8em;">v1.3.0</span>
+    <span style="opacity:.6; font-size:.8em;">v1.3.1</span>
   </div>
 </footer>
 
@@ -880,6 +880,24 @@
     document.getElementById('verdictBox').style.display = 'block';
   }
 
+  function renderVerdictError(msg){
+    lastGameId = null;
+    document.getElementById('verdictNo').textContent = '판정 불가';
+    const badgeEl = document.getElementById('verdictBadge');
+    badgeEl.className = 'badge dismiss';
+    badgeEl.textContent = '통신 오류';
+    document.getElementById('verdictCommittee').textContent = '—';
+    document.getElementById('verdictUser').textContent = '—';
+    document.getElementById('verdictOrder').textContent = msg;
+    const appealResult = document.getElementById('appealResult');
+    appealResult.classList.remove('show');
+    appealResult.textContent = '';
+    const appealBtn = document.getElementById('appealBtn');
+    appealBtn.disabled = true;
+    appealBtn.textContent = '이의신청 제기';
+    document.getElementById('verdictBox').style.display = 'block';
+  }
+
   async function playGame(userPick){
     if(isPlaying) return; // 요청 진행 중 중복 클릭/연타 방지 (타이머 대신 실제 진행 상태로 판단)
     isPlaying = true;
@@ -893,8 +911,7 @@
         const { data, error } = await sb.rpc('play_and_record', { p_user_pick: userPick });
         if(error || !data){
           console.error('play_and_record error:', error);
-          document.getElementById('verdictOrder').textContent = '위원회 서버와 통신에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-          document.getElementById('verdictBox').style.display = 'block';
+          renderVerdictError('위원회 서버와 통신에 실패했습니다. 잠시 후 다시 시도해 주세요.');
           return;
         }
         lastGameId = data.id;
@@ -902,6 +919,9 @@
         // 매번 정리하면 대국마다 추가 요청이 붙으므로, 몇 판에 한 번만 정리
         trimCounter = (trimCounter + 1) % TRIM_EVERY_N_PLAYS;
         if(trimCounter === 0) trimOldGameResults();
+      } catch(e){
+        console.error('playGame error:', e);
+        renderVerdictError('위원회 서버와 통신에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       } finally {
         isPlaying = false;
         setPickBtnsDisabled(false);
@@ -1132,7 +1152,7 @@
         <td>${escapeHtml(m.name)}</td>
         <td class="hand">${emojiMap[m.hand] || ''} ${m.hand}</td>
         <td>${new Date(m.created_at).toLocaleDateString('ko-KR')}</td>
-        ${isChair ? `<td><button class="expel-btn" data-no="${m.member_no}" data-name="${escapeHtml(m.name)}">강제 탈퇴</button></td>` : ''}
+        ${isChair ? `<td><button class="expel-btn" data-no="${Number(m.member_no)}">강제 탈퇴</button></td>` : ''}
       </tr>
     `).join('');
   }
@@ -1163,7 +1183,9 @@
   document.getElementById('memberTableBody').addEventListener('click', (e)=>{
     const btn = e.target.closest('.expel-btn');
     if(!btn) return;
-    expelMember(Number(btn.dataset.no), btn.dataset.name);
+    const no = Number(btn.dataset.no);
+    const target = lastMembersData.find(m => m.member_no === no);
+    expelMember(no, target ? target.name : `제${String(no).padStart(4,'0')}호`);
   });
 
   // ---- 위원장 로그인 ----
@@ -1237,9 +1259,10 @@
   }
 
   function escapeHtml(str){
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
+    // 텍스트뿐 아니라 속성값 안에서도 안전하도록 따옴표까지 이스케이프
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   const JOIN_COOLDOWN_MS = 30000;
