@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://12cchris.github.io/rps-committee/sitemap.xml

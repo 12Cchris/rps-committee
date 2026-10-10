@@ -1,0 +1,37 @@
+name: Supabase pause watch
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # every day 09:00 KST
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://jcdxkuierrzubkidcpdj.supabase.co
+      SUPABASE_KEY: sb_publishable_NFU4D2Y0gXZthdtk2F3UYA_hVZqApc3
+      WARN_DAYS: "5"
+    steps:
+      - name: Check last activity
+        run: |
+          latest=""
+          for t in members game_results; do
+            body=$(curl -sS -w "\n%{http_code}" "$SUPABASE_URL/rest/v1/$t?select=created_at&order=created_at.desc&limit=1" \
+              -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY") || true
+            code=$(echo "$body" | tail -n1)
+            json=$(echo "$body" | sed '$d')
+            if [ "$code" != "200" ]; then
+              echo "::error::Supabase request failed (HTTP $code) - project may already be PAUSED. Open the Supabase dashboard and restore it."
+              exit 1
+            fi
+            ts=$(echo "$json" | grep -o '"created_at":"[^"]*"' | head -n1 | cut -d'"' -f4)
+            if [ -n "$ts" ] && { [ -z "$latest" ] || [[ "$ts" > "$latest" ]]; }; then latest="$ts"; fi
+          done
+          if [ -z "$latest" ]; then echo "No records yet."; exit 0; fi
+          idle=$(( ( $(date +%s) - $(date -d "$latest" +%s) ) / 86400 ))
+          echo "Last record: $latest (idle ${idle} days)"
+          if [ "$idle" -ge "$WARN_DAYS" ]; then
+            echo "::error::No activity for ${idle} days. Supabase free plan pauses after ~7 days of inactivity."
+            exit 1
+          fi
